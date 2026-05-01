@@ -158,6 +158,10 @@ export default async function ProfilePage() {
                     className="text-xs text-slate-500 border border-ivory-border px-3 py-1.5 rounded-lg hover:bg-ivory transition-colors">
                     View
                   </Link>
+                  <Link href={`/forms/${f.id}/edit`}
+                    className="text-xs bg-charcoal text-white px-3 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
+                    Edit
+                  </Link>
                   <DeactivateButton formId={f.id} isActive={f.is_active !== false} />
                 </div>
               </div>
