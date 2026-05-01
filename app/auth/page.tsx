@@ -100,8 +100,8 @@ function AuthForm() {
     } else {
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) { setError(signInError.message); setLoading(false); return }
-      router.push('/')
-      router.refresh()
+      // Full navigation so server picks up the new session cookie immediately
+      window.location.href = '/'
     }
     setLoading(false)
   }

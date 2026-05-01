@@ -77,8 +77,7 @@ export default function SubmitPage() {
     })
 
     if (insertError) { setError(insertError.message); setLoading(false); return }
-    router.push('/?submitted=1')
-    router.refresh()
+    window.location.href = '/'
   }
 
   const pointsEarned = 10 + estimatedMinutes * 2

@@ -24,7 +24,7 @@ export default function UpdatePasswordPage() {
     const { error: updateErr } = await supabase.auth.updateUser({ password })
     if (updateErr) { setError(updateErr.message); setLoading(false); return }
     setDone(true)
-    setTimeout(() => { router.push('/'); router.refresh() }, 2000)
+    setTimeout(() => { window.location.href = '/' }, 2000)
   }
 
   return (

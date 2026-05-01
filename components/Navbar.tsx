@@ -34,8 +34,7 @@ export default function Navbar() {
 
   async function signOut() {
     await supabase.auth.signOut()
-    router.push('/')
-    router.refresh()
+    window.location.href = '/'
   }
 
   const profileHref = username ? `/u/${username}` : '/profile'
