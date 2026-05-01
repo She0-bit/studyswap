@@ -55,10 +55,16 @@ export default async function HomePage({
     fills?.forEach(f => myFillIds.add(f.form_id))
   }
 
+  // ── Pin featured surveys to top (owner's surveys always rank first) ──
+  const FEATURED_USERNAME = 'sheikah'
+  const featuredForms = feed.filter(f => f.submitter_username?.toLowerCase() === FEATURED_USERNAME)
+  const otherForms    = feed.filter(f => f.submitter_username?.toLowerCase() !== FEATURED_USERNAME)
+  const sortedFeed    = [...featuredForms, ...otherForms]
+
   // ── For You matching ─────────────────────────────────────────
   const hasProfileForMatching = profile && (profile.role || profile.age || profile.sex || profile.country)
   const forYou = profile && !q && !specialty && tab !== 'following'
-    ? feed.filter(f =>
+    ? sortedFeed.filter(f =>
         !myFillIds.has(f.id) &&
         f.user_id !== user?.id &&
         matchesCriteria(f.sample_criteria, profile!)
@@ -127,7 +133,7 @@ export default async function HomePage({
           ) : (
             <div className="space-y-3">
               {forYou.map(form => (
-                <FormCard key={form.id} form={form} rank={feed.indexOf(form) + 1} filledByMe={false} highlighted />
+                <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} filledByMe={false} highlighted />
               ))}
             </div>
           )}
@@ -194,7 +200,7 @@ export default async function HomePage({
             ))}
           </div>
         )
-      ) : feed.length === 0 ? (
+      ) : sortedFeed.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
           <p className="text-lg mb-2">No surveys found</p>
           <p className="text-sm">
@@ -206,7 +212,7 @@ export default async function HomePage({
         </div>
       ) : (
         <div className="space-y-3">
-          {feed.map((form, i) => (
+          {sortedFeed.map((form, i) => (
             <FormCard key={form.id} form={form} rank={i + 1} filledByMe={myFillIds.has(form.id)} />
           ))}
         </div>
