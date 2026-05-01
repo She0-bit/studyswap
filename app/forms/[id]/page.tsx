@@ -53,16 +53,16 @@ export default async function FormDetailPage({
         <ArrowLeft size={15} /> Back to feed
       </Link>
 
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-ivory-border rounded-2xl shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-700 px-7 py-8 text-white">
+        <div className="bg-gradient-to-br from-charcoal to-charcoal-deep px-7 py-8 text-white">
           {f.specialty && (
             <span className="text-xs font-medium bg-white/20 px-2.5 py-1 rounded-full mb-3 inline-block">
               {f.specialty}
             </span>
           )}
           <h1 className="text-xl font-bold leading-snug">{f.title}</h1>
-          <div className="mt-3 flex items-center gap-1.5 text-indigo-200 text-sm">
+          <div className="mt-3 flex items-center gap-1.5 text-ivory/80 text-sm">
             <BookOpen size={14} />
             <span>{f.submitter_name || 'Anonymous'}</span>
             {f.submitter_institution && <span>· {f.submitter_institution}</span>}
@@ -75,11 +75,11 @@ export default async function FormDetailPage({
 
           {/* Sample criteria */}
           {(hasRoles || hasSex || hasAge || hasCountries || hasOther) && (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="bg-ivory border border-ivory-border rounded-xl p-4">
               <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2.5">Who this survey is for</p>
               <div className="flex flex-wrap gap-2">
                 {hasRoles && criteria!.roles.map(r => (
-                  <span key={r} className="inline-flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-full">
+                  <span key={r} className="inline-flex items-center gap-1.5 text-xs bg-ivory text-charcoal border border-charcoal/10 px-2.5 py-1 rounded-full">
                     <UserCheck size={11} /> {roleLabel(r)}
                   </span>
                 ))}
@@ -107,12 +107,12 @@ export default async function FormDetailPage({
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-slate-50 rounded-xl p-3.5 text-center">
-              <Clock size={16} className="text-indigo-400 mx-auto mb-1" />
+            <div className="bg-ivory rounded-xl p-3.5 text-center">
+              <Clock size={16} className="text-charcoal/70 mx-auto mb-1" />
               <p className="text-lg font-bold text-slate-700">{f.estimated_minutes}</p>
               <p className="text-xs text-slate-400">min</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-3.5 text-center">
+            <div className="bg-ivory rounded-xl p-3.5 text-center">
               <Users size={16} className="text-emerald-400 mx-auto mb-1" />
               <p className="text-lg font-bold text-slate-700">{f.fill_count}</p>
               <p className="text-xs text-slate-400">responses</p>

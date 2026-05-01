@@ -91,12 +91,12 @@ export default function SubmitPage() {
         </p>
       </div>
 
-      <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-8 text-sm text-indigo-700">
+      <div className="bg-ivory border border-charcoal/10 rounded-xl p-4 mb-8 text-sm text-charcoal">
         <p className="font-medium mb-1">How ranking works</p>
         <p>Every survey you fill earns you points based on its estimated time. Your total points push your own survey higher in the list.</p>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-sm">
+      <div className="bg-white border border-ivory-border rounded-2xl p-7 shadow-sm">
         {error && (
           <div className="mb-5 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>
         )}
@@ -108,7 +108,7 @@ export default function SubmitPage() {
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Study title *</label>
             <input required value={title} onChange={e => setTitle(e.target.value)} maxLength={120}
               placeholder="e.g. Prevalence of burnout among medical interns"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
           </div>
 
           <div>
@@ -116,7 +116,7 @@ export default function SubmitPage() {
             <textarea required value={description} onChange={e => setDescription(e.target.value)}
               rows={3} maxLength={400}
               placeholder="Brief description of your study — what it's about, any key details"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none" />
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal resize-none" />
             <p className="text-xs text-slate-400 mt-1">{description.length}/400</p>
           </div>
 
@@ -126,7 +126,7 @@ export default function SubmitPage() {
             </label>
             <input required type="url" value={link} onChange={e => setLink(e.target.value)}
               placeholder="https://forms.gle/..."
-              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
             <p className="text-xs text-slate-400 mt-1">Google Forms, SurveyMonkey, REDCap — any link works</p>
           </div>
 
@@ -137,7 +137,7 @@ export default function SubmitPage() {
               </label>
               <input type="number" required min={1} max={60}
                 value={estimatedMinutes} onChange={e => setEst(Number(e.target.value))}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
               <p className="text-xs text-emerald-600 mt-1">Fillers earn {pointsEarned} pts</p>
             </div>
 
@@ -146,7 +146,7 @@ export default function SubmitPage() {
                 <BookOpen size={14} /> Field / Specialty
               </label>
               <select value={specialty} onChange={e => setSpecialty(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal bg-white">
                 <option value="">Select…</option>
                 {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
                   <optgroup key={group} label={group}>
@@ -163,13 +163,13 @@ export default function SubmitPage() {
             </label>
             <input value={institution} onChange={e => setInstitution(e.target.value)}
               placeholder="e.g. King Abdulaziz University"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
           </div>
 
           {/* ── Sample criteria ── */}
-          <div className="border-t border-slate-100 pt-6">
+          <div className="border-t border-ivory-border pt-6">
             <div className="flex items-center gap-2 mb-1">
-              <Users size={16} className="text-indigo-500" />
+              <Users size={16} className="text-charcoal" />
               <h3 className="font-medium text-slate-800">Target population</h3>
             </div>
             <p className="text-xs text-slate-500 mb-4">
@@ -186,8 +186,8 @@ export default function SubmitPage() {
                   <button key={r.value} type="button" onClick={() => toggleRole(r.value)}
                     className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                       selectedRoles.includes(r.value)
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
                     }`}>
                     {r.label}
                   </button>
@@ -203,8 +203,8 @@ export default function SubmitPage() {
                   <button key={val} type="button" onClick={() => setSex(val)}
                     className={`text-xs px-4 py-1.5 rounded-full border transition-colors ${
                       sex === val
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
                     }`}>
                     {lbl}
                   </button>
@@ -218,11 +218,11 @@ export default function SubmitPage() {
               <div className="flex items-center gap-3">
                 <input type="number" min={1} max={120} value={minAge}
                   onChange={e => setMinAge(e.target.value)} placeholder="Min"
-                  className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
                 <span className="text-slate-400 text-sm">to</span>
                 <input type="number" min={1} max={120} value={maxAge}
                   onChange={e => setMaxAge(e.target.value)} placeholder="Max"
-                  className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  className="w-24 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
                 <span className="text-xs text-slate-400">Leave empty for any age</span>
               </div>
             </div>
@@ -237,8 +237,8 @@ export default function SubmitPage() {
                   <button key={c} type="button" onClick={() => toggleCountry(c)}
                     className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                       selectedCountries.includes(c)
-                        ? 'bg-indigo-600 text-white border-indigo-600'
-                        : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-400'
+                        ? 'bg-charcoal text-white border-charcoal'
+                        : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
                     }`}>
                     {c}
                   </button>
@@ -246,7 +246,7 @@ export default function SubmitPage() {
               </div>
               <input value={customCountry} onChange={e => setCustomCountry(e.target.value)}
                 placeholder="Other countries (comma-separated)"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
             </div>
 
             {/* Other */}
@@ -256,12 +256,12 @@ export default function SubmitPage() {
               </label>
               <input value={otherCriteria} onChange={e => setOtherCriteria(e.target.value)}
                 placeholder="e.g. Currently enrolled in clinical rotations, diagnosed with diabetes, etc."
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
             </div>
           </div>
 
           <button type="submit" disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60">
+            className="w-full flex items-center justify-center gap-2 bg-charcoal text-white py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-60">
             {loading ? 'Submitting…' : <><span>Submit survey</span><ChevronRight size={16} /></>}
           </button>
         </form>

@@ -61,7 +61,7 @@ export default function FillButton({
   if (!isLoggedIn) {
     return (
       <a href="/auth"
-        className="block w-full text-center bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors">
+        className="block w-full text-center bg-charcoal text-white py-3 rounded-xl font-medium text-sm hover:bg-charcoal-deep transition-colors">
         Sign in to fill this survey & earn {pointsReward} pts
       </a>
     )
@@ -69,7 +69,7 @@ export default function FillButton({
 
   if (isOwner) {
     return (
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center text-sm text-slate-500">
+      <div className="bg-ivory border border-ivory-border rounded-xl p-4 text-center text-sm text-slate-500">
         This is your survey — share it to get more responses!
       </div>
     )
@@ -93,7 +93,7 @@ export default function FillButton({
 
       {phase === 'idle' && (
         <button onClick={openForm}
-          className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors">
+          className="w-full flex items-center justify-center gap-2 bg-charcoal text-white py-3 rounded-xl font-medium text-sm hover:bg-charcoal-deep transition-colors">
           <ExternalLink size={16} />
           Open & fill this survey (earn +{pointsReward} pts)
         </button>

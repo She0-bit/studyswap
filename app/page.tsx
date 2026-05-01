@@ -81,7 +81,7 @@ export default async function HomePage({
           </p>
           {!user && (
             <div className="mt-5 flex items-center justify-center gap-3">
-              <Link href="/auth" className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+              <Link href="/auth" className="bg-charcoal text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors">
                 Get started free
               </Link>
               <Link href="#feed" className="text-sm text-slate-500 hover:text-slate-700">Browse surveys ↓</Link>
@@ -94,11 +94,11 @@ export default async function HomePage({
       {!q && !specialty && (
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { icon: <Users size={18} className="text-indigo-500" />, label: 'Active surveys', value: feed.length },
+            { icon: <Users size={18} className="text-charcoal" />, label: 'Active surveys', value: feed.length },
             { icon: <Trophy size={18} className="text-amber-500" />, label: 'Points in circulation', value: feed.reduce((a, f) => a + f.submitter_points, 0) },
             { icon: <Zap size={18} className="text-emerald-500" />, label: 'Total responses', value: feed.reduce((a, f) => a + f.fill_count, 0) },
           ].map(stat => (
-            <div key={stat.label} className="bg-white border border-slate-200 rounded-xl p-4 text-center">
+            <div key={stat.label} className="bg-white border border-ivory-border rounded-xl p-4 text-center">
               <div className="flex justify-center mb-1">{stat.icon}</div>
               <div className="text-xl font-bold text-slate-800">{stat.value}</div>
               <div className="text-xs text-slate-400">{stat.label}</div>
@@ -111,17 +111,17 @@ export default async function HomePage({
       {user && !q && !specialty && activeTab === 'all' && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={16} className="text-indigo-500" />
+            <Sparkles size={16} className="text-charcoal" />
             <h2 className="font-semibold text-slate-800">Suggested for you</h2>
             <span className="text-xs text-slate-400 ml-1">surveys matching your profile</span>
           </div>
           {!hasProfileForMatching ? (
-            <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-5 py-4 text-sm text-indigo-700 flex items-center justify-between">
+            <div className="bg-ivory border border-charcoal/10 rounded-xl px-5 py-4 text-sm text-charcoal flex items-center justify-between">
               <span>Complete your profile to see surveys tailored to you</span>
               <Link href="/profile" className="font-medium underline underline-offset-2 shrink-0 ml-4">Update profile →</Link>
             </div>
           ) : forYou.length === 0 ? (
-            <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm text-slate-500">
+            <div className="bg-ivory border border-ivory-border rounded-xl px-5 py-4 text-sm text-slate-500">
               No matching surveys right now — check back later.
             </div>
           ) : (
@@ -139,12 +139,12 @@ export default async function HomePage({
         <form method="GET" className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input name="q" defaultValue={q} placeholder="Search by title…"
-            className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal" />
           {specialty && <input type="hidden" name="specialty" value={specialty} />}
         </form>
         <form method="GET">
           <select name="specialty" defaultValue={specialty ?? ''}
-            className="w-full sm:w-56 border border-slate-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full sm:w-56 border border-ivory-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
             <option value="">All specialties</option>
             {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
               <optgroup key={group} label={group}>
@@ -161,7 +161,7 @@ export default async function HomePage({
 
       {/* Tabs */}
       {user && (
-        <div className="flex gap-1 mb-5 bg-slate-100 p-1 rounded-xl w-fit">
+        <div className="flex gap-1 mb-5 bg-ivory-dark p-1 rounded-xl w-fit">
           <Link href="/" className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             activeTab === 'all' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}>
@@ -199,8 +199,8 @@ export default async function HomePage({
           <p className="text-lg mb-2">No surveys found</p>
           <p className="text-sm">
             {user
-              ? <Link href="/submit" className="text-indigo-600 hover:underline">Submit the first one →</Link>
-              : <Link href="/auth" className="text-indigo-600 hover:underline">Sign in to submit yours →</Link>
+              ? <Link href="/submit" className="text-charcoal hover:underline">Submit the first one →</Link>
+              : <Link href="/auth" className="text-charcoal hover:underline">Sign in to submit yours →</Link>
             }
           </p>
         </div>

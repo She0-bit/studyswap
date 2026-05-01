@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { FlaskConical, Plus, User, LogOut, Menu, X } from 'lucide-react'
+import { Plus, User, LogOut, Menu, X } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
@@ -40,11 +40,11 @@ export default function Navbar() {
   const profileHref = username ? `/u/${username}` : '/profile'
 
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <nav className="bg-white border-b border-ivory-border sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-indigo-600 text-lg">
-          <FlaskConical size={20} />
-          StudySwap
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.svg" alt="n=1" className="h-8 w-auto" />
         </Link>
 
         {/* Desktop */}
@@ -55,11 +55,11 @@ export default function Navbar() {
                 {points} pts
               </span>
               <Link href="/submit"
-                className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+                className="flex items-center gap-1.5 text-sm bg-charcoal text-white px-3 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
                 <Plus size={15} /> Submit
               </Link>
               <Link href={profileHref}
-                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-600 px-2 py-1.5 transition-colors">
+                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-charcoal px-2 py-1.5 transition-colors">
                 <User size={15} />
                 {username ? <span>@{username}</span> : <span>Profile</span>}
               </Link>
@@ -74,7 +74,7 @@ export default function Navbar() {
             </>
           ) : (
             <Link href="/auth"
-              className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+              className="text-sm bg-charcoal text-white px-4 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
               Sign in
             </Link>
           )}
@@ -88,7 +88,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="sm:hidden border-t border-slate-100 bg-white px-4 py-3 flex flex-col gap-3">
+        <div className="sm:hidden border-t border-ivory-border bg-white px-4 py-3 flex flex-col gap-3">
           {user ? (
             <>
               <span className="text-sm font-medium text-emerald-600">{points} points</span>
@@ -97,12 +97,12 @@ export default function Navbar() {
                   @{username}
                 </Link>
               )}
-              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-indigo-600 font-medium">+ Submit survey</Link>
+              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-charcoal font-medium">+ Submit survey</Link>
               <Link href="/profile"   onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">Settings</Link>
               <button onClick={signOut} className="text-sm text-left text-red-500">Sign out</button>
             </>
           ) : (
-            <Link href="/auth" onClick={() => setMenuOpen(false)} className="text-sm text-indigo-600 font-medium">Sign in</Link>
+            <Link href="/auth" onClick={() => setMenuOpen(false)} className="text-sm text-charcoal font-medium">Sign in</Link>
           )}
         </div>
       )}

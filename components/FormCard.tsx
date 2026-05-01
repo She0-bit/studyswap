@@ -27,8 +27,8 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
 
   return (
     <Link href={`/forms/${form.id}`} className="block group">
-      <div className={`bg-white border rounded-xl p-5 hover:border-indigo-300 hover:shadow-md transition-all ${
-        highlighted ? 'border-indigo-200 ring-1 ring-indigo-100' : 'border-slate-200'
+      <div className={`bg-white border rounded-xl p-5 hover:border-charcoal/30 hover:shadow-md transition-all ${
+        highlighted ? 'border-charcoal/20 ring-1 ring-charcoal/10' : 'border-ivory-border'
       }`}>
         <div className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
@@ -43,7 +43,7 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
                 <span className="text-slate-400 text-xs font-medium">#{rank}</span>
               )}
               {form.specialty && (
-                <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-charcoal bg-ivory px-2 py-0.5 rounded-full">
                   {form.specialty}
                 </span>
               )}
@@ -53,14 +53,14 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
                 </span>
               )}
               {highlighted && (
-                <span className="text-xs text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-charcoal bg-ivory px-2 py-0.5 rounded-full">
                   ✦ For you
                 </span>
               )}
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold text-slate-800 group-hover:text-indigo-600 transition-colors">
+            <h3 className="font-semibold text-slate-800 group-hover:text-charcoal transition-colors">
               {form.title}
             </h3>
             <p className="text-sm text-slate-500 mt-0.5 line-clamp-2">{form.description}</p>
@@ -69,22 +69,22 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
             {(hasRoles || hasSex || hasAge || hasCountries || hasOther) && (
               <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {hasRoles && criteria!.roles.map(r => (
-                  <span key={r} className="inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                  <span key={r} className="inline-flex items-center gap-1 text-xs bg-ivory-dark text-slate-600 px-2 py-0.5 rounded-full">
                     <UserCheck size={10} /> {roleLabel(r)}
                   </span>
                 ))}
                 {hasSex && (
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full capitalize">
+                  <span className="text-xs bg-ivory-dark text-slate-600 px-2 py-0.5 rounded-full capitalize">
                     {criteria!.sex} only
                   </span>
                 )}
                 {hasAge && (
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-ivory-dark text-slate-600 px-2 py-0.5 rounded-full">
                     Age {criteria!.min_age ?? '?'}–{criteria!.max_age ?? '?'}
                   </span>
                 )}
                 {hasCountries && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs bg-ivory-dark text-slate-600 px-2 py-0.5 rounded-full">
                     <MapPin size={10} /> {criteria!.countries.slice(0, 2).join(', ')}{criteria!.countries.length > 2 ? ` +${criteria!.countries.length - 2}` : ''}
                   </span>
                 )}
@@ -108,7 +108,7 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
           </span>
           {form.submitter_username ? (
             <Link href={`/u/${form.submitter_username}`} onClick={e => e.stopPropagation()}
-              className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
+              className="flex items-center gap-1 hover:text-charcoal transition-colors">
               <BookOpen size={12} />
               @{form.submitter_username}
               {form.submitter_institution ? ` · ${form.submitter_institution}` : ''}

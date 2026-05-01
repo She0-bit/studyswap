@@ -112,7 +112,7 @@ function AuthForm() {
 
   const titles: Record<Mode, string> = {
     login:  'Welcome back',
-    signup: 'Join StudySwap',
+    signup: 'Join n=1',
     forgot: 'Reset your password',
   }
   const subtitles: Record<Mode, string> = {
@@ -125,14 +125,14 @@ function AuthForm() {
     <div className="min-h-[calc(100vh-120px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-100 mb-4">
-            <FlaskConical className="text-indigo-600" size={24} />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-ivory mb-4">
+            <FlaskConical className="text-charcoal" size={24} />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">{titles[mode]}</h1>
           <p className="text-slate-500 mt-1 text-sm">{subtitles[mode]}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-ivory-border p-8">
           {error && (
             <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>
           )}
@@ -147,7 +147,7 @@ function AuthForm() {
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Full name</label>
                   <input type="text" required value={name} onChange={e => setName(e.target.value)}
                     placeholder="Dr. Jane Smith"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
                 </div>
 
                 <div>
@@ -163,7 +163,7 @@ function AuthForm() {
                       onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                       placeholder="dr_jane"
                       maxLength={20}
-                      className={`w-full border rounded-lg pl-7 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      className={`w-full border rounded-lg pl-7 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal ${
                         usernameStatus === 'available' ? 'border-emerald-400' :
                         usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-400' :
                         'border-slate-300'
@@ -179,7 +179,7 @@ function AuthForm() {
                     {usernameStatus === 'available' && <span className="text-emerald-600">@{username} is available!</span>}
                     {usernameStatus === 'taken'     && <span className="text-red-500">@{username} is already taken</span>}
                     {usernameStatus === 'invalid'   && <span className="text-red-500">3–20 chars, letters, numbers and _ only</span>}
-                    {usernameStatus === 'idle'      && 'Your public profile will be studyswap.app/u/username'}
+                    {usernameStatus === 'idle'      && 'Your public profile will be n1surveys.app/u/username'}
                     {usernameStatus === 'checking'  && 'Checking availability…'}
                   </p>
                 </div>
@@ -190,7 +190,7 @@ function AuthForm() {
                   </label>
                   <input type="text" value={institution} onChange={e => setInstitution(e.target.value)}
                     placeholder="e.g. King Saud University"
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
                 </div>
               </>
             )}
@@ -199,7 +199,7 @@ function AuthForm() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                 placeholder="you@university.edu"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
             </div>
 
             {mode !== 'forgot' && (
@@ -208,19 +208,19 @@ function AuthForm() {
                   <label className="block text-sm font-medium text-slate-700">Password</label>
                   {mode === 'login' && (
                     <button type="button" onClick={() => switchMode('forgot')}
-                      className="text-xs text-indigo-500 hover:underline">
+                      className="text-xs text-charcoal hover:underline">
                       Forgot password?
                     </button>
                   )}
                 </div>
                 <input type="password" required minLength={6} value={password}
                   onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters"
-                  className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
               </div>
             )}
 
             <button type="submit" disabled={loading || (mode === 'signup' && usernameStatus !== 'available')}
-              className="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+              className="w-full bg-charcoal text-white py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
               {loading ? 'Please wait…' :
                 mode === 'login'  ? 'Sign in' :
                 mode === 'signup' ? 'Create account' :
@@ -230,16 +230,16 @@ function AuthForm() {
 
           <p className="mt-5 text-center text-sm text-slate-500">
             {mode === 'forgot' ? (
-              <button onClick={() => switchMode('login')} className="text-indigo-600 font-medium hover:underline">
+              <button onClick={() => switchMode('login')} className="text-charcoal font-medium hover:underline">
                 ← Back to sign in
               </button>
             ) : mode === 'login' ? (
               <>Don't have an account?{' '}
-                <button onClick={() => switchMode('signup')} className="text-indigo-600 font-medium hover:underline">Sign up</button>
+                <button onClick={() => switchMode('signup')} className="text-charcoal font-medium hover:underline">Sign up</button>
               </>
             ) : (
               <>Already have an account?{' '}
-                <button onClick={() => switchMode('login')} className="text-indigo-600 font-medium hover:underline">Sign in</button>
+                <button onClick={() => switchMode('login')} className="text-charcoal font-medium hover:underline">Sign in</button>
               </>
             )}
           </p>

@@ -43,8 +43,8 @@ export default function FollowButton({ targetUserId, currentUserId, initialFollo
     <button onClick={toggle} disabled={loading}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-60 ${
         following
-          ? 'bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600 border border-slate-200'
-          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+          ? 'bg-ivory-dark text-slate-600 hover:bg-red-50 hover:text-red-600 border border-ivory-border'
+          : 'bg-charcoal text-white hover:bg-charcoal-deep'
       }`}>
       {loading ? <Loader2 size={15} className="animate-spin" /> :
         following ? <><UserMinus size={15} /> Following ({count})</> :

@@ -72,7 +72,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Full name</label>
           <input value={name} onChange={e => setName(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">
@@ -84,9 +84,9 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
               value={username}
               onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               maxLength={20} placeholder="your_handle"
-              className={`w-full border rounded-lg pl-7 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full border rounded-lg pl-7 pr-8 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal ${
                 usernameStatus === 'available' || usernameStatus === 'same' ? 'border-emerald-400' :
-                usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-400' : 'border-slate-200'
+                usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-400' : 'border-ivory-border'
               }`}
             />
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
@@ -99,7 +99,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
             {usernameStatus === 'taken'   && <span className="text-red-500">Already taken</span>}
             {usernameStatus === 'invalid' && <span className="text-red-500">3–20 chars, letters/numbers/_ only</span>}
             {usernameStatus === 'available' && <span className="text-emerald-600">Available!</span>}
-            {(usernameStatus === 'idle' || usernameStatus === 'same') && 'studyswap.app/u/username'}
+            {(usernameStatus === 'idle' || usernameStatus === 'same') && 'n1surveys.app/u/username'}
           </p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Institution</label>
           <input value={institution} onChange={e => setInst(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
         </div>
       </div>
 
@@ -116,7 +116,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Your role / occupation</label>
           <select value={role} onChange={e => setRole(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
             <option value="">Select…</option>
             {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
@@ -124,7 +124,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Field / Specialty</label>
           <select value={specialty} onChange={e => setSpecialty(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
             <option value="">Select…</option>
             {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
               <optgroup key={group} label={group}>
@@ -140,12 +140,12 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
           <label className="block text-xs font-medium text-slate-600 mb-1">Age</label>
           <input type="number" min={1} max={120} value={age} onChange={e => setAge(e.target.value)}
             placeholder="e.g. 24"
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
         </div>
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Sex</label>
           <select value={sex} onChange={e => setSex(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
             <option value="">Prefer not to say</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -154,7 +154,7 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Country</label>
           <select value={country} onChange={e => setCountry(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
             <option value="">Select…</option>
             {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -165,13 +165,13 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
         <div>
           <label className="block text-xs font-medium text-slate-600 mb-1">Specify country</label>
           <input value={customCountry} onChange={e => setCustom(e.target.value)}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full border border-ivory-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal" />
         </div>
       )}
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={loading}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-60">
+          className="flex items-center gap-2 bg-charcoal text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-60">
           <Save size={14} /> {loading ? 'Saving…' : 'Save profile'}
         </button>
         {saved && <span className="text-sm text-emerald-600">✓ Saved!</span>}

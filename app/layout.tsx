@@ -9,8 +9,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "StudySwap — Fill forms, boost your research",
-  description: "A karma-based platform where med students exchange survey participation. Fill others' forms to rank yours higher.",
+  title: "n=1 — Fill forms, boost your research",
+  description: "Be someone's n=1. Fill others' surveys to rank yours higher — a research participation exchange for med students and beyond.",
 };
 
 export default function RootLayout({
@@ -20,11 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-slate-50">
+      <body className="min-h-full flex flex-col bg-ivory">
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="text-center text-xs text-slate-400 py-6 border-t border-slate-100">
-          StudySwap · Built for med students, by med students
+        <footer className="text-center text-xs text-slate-400 py-6 border-t border-ivory-border">
+          n=1 · Built for med students, by med students
         </footer>
       </body>
     </html>

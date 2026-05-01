@@ -55,13 +55,13 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
       </Link>
 
       {/* Profile card */}
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-2xl p-7 mb-6">
+      <div className="bg-gradient-to-br from-charcoal to-charcoal-deep text-white rounded-2xl p-7 mb-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold">{profile.name || `@${profile.username}`}</h1>
-            <p className="text-indigo-200 text-sm mt-0.5">@{profile.username}</p>
-            {profile.institution && <p className="text-indigo-300 text-xs mt-0.5">{profile.institution}</p>}
-            {profile.specialty   && <p className="text-indigo-300 text-xs">{profile.specialty}</p>}
+            <p className="text-ivory/80 text-sm mt-0.5">@{profile.username}</p>
+            {profile.institution && <p className="text-ivory/60 text-xs mt-0.5">{profile.institution}</p>}
+            {profile.specialty   && <p className="text-ivory/60 text-xs">{profile.specialty}</p>}
           </div>
 
           <div className="flex flex-col items-end gap-2">
@@ -81,7 +81,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             {/* Share profile */}
             <button
               onClick={() => {}} // handled client-side via copy
-              className="text-xs text-indigo-200 hover:text-white flex items-center gap-1 transition-colors"
+              className="text-xs text-ivory/80 hover:text-white flex items-center gap-1 transition-colors"
               id="copy-profile-link"
             >
               <Share2 size={12} /> Share profile
@@ -98,7 +98,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
               <div className="text-lg font-bold">{s.value}</div>
-              <div className="text-indigo-200 text-xs">{s.label}</div>
+              <div className="text-ivory/80 text-xs">{s.label}</div>
             </div>
           ))}
         </div>
@@ -110,15 +110,15 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
       {/* Their surveys */}
       <div>
         <h2 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-          <CheckCircle2 size={16} className="text-indigo-500" />
+          <CheckCircle2 size={16} className="text-charcoal" />
           {isOwnProfile ? 'My surveys' : `${profile.name || '@' + profile.username}'s surveys`}
         </h2>
 
         {feed.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 text-sm">
+          <div className="bg-white border border-ivory-border rounded-xl p-8 text-center text-slate-400 text-sm">
             No surveys posted yet.
             {isOwnProfile && (
-              <> <Link href="/submit" className="text-indigo-600 hover:underline">Submit one →</Link></>
+              <> <Link href="/submit" className="text-charcoal hover:underline">Submit one →</Link></>
             )}
           </div>
         ) : (

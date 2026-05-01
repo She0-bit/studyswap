@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #F3F0E7;
+  --foreground: #2A2529;
 }
 
 @theme inline {
@@ -10,6 +10,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* n=1 brand palette */
+  --color-charcoal:      #2A2529;
+  --color-charcoal-deep: #1a1518;
+  --color-ivory:         #F3F0E7;
+  --color-ivory-dark:    #E8E3D8;
+  --color-ivory-border:  #D9D3C7;
 }
 
 body {

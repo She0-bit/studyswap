@@ -32,23 +32,23 @@ export default async function ProfilePage() {
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
 
       {/* Header card */}
-      <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-2xl p-7">
+      <div className="bg-gradient-to-br from-charcoal to-charcoal-deep text-white rounded-2xl p-7">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold">{profile?.name || user.email}</h1>
             {profile?.username ? (
               <Link href={`/u/${profile.username}`}
-                className="inline-flex items-center gap-1 text-indigo-200 text-sm mt-0.5 hover:text-white transition-colors">
+                className="inline-flex items-center gap-1 text-ivory/80 text-sm mt-0.5 hover:text-white transition-colors">
                 @{profile.username} <ExternalLink size={11} />
               </Link>
             ) : (
-              <p className="text-indigo-300 text-xs mt-0.5 italic">No username yet — set one below</p>
+              <p className="text-ivory/60 text-xs mt-0.5 italic">No username yet — set one below</p>
             )}
-            {profile?.institution && <p className="text-indigo-300 text-xs mt-0.5">{profile.institution}</p>}
+            {profile?.institution && <p className="text-ivory/60 text-xs mt-0.5">{profile.institution}</p>}
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">{profile?.points ?? 0}</div>
-            <div className="text-indigo-200 text-xs">total points</div>
+            <div className="text-ivory/80 text-xs">total points</div>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-5 gap-2">
@@ -61,7 +61,7 @@ export default async function ProfilePage() {
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
               <div className="text-lg font-bold">{s.value}</div>
-              <div className="text-indigo-200 text-xs">{s.label}</div>
+              <div className="text-ivory/80 text-xs">{s.label}</div>
             </div>
           ))}
         </div>
@@ -77,11 +77,11 @@ export default async function ProfilePage() {
       {/* Edit profile */}
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <UserCircle size={18} className="text-indigo-500" />
+          <UserCircle size={18} className="text-charcoal" />
           <h2 className="font-semibold text-slate-800">My profile</h2>
         </div>
-        <div className="bg-white border border-slate-200 rounded-xl p-6">
-          <p className="text-xs text-slate-500 mb-4 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-2.5">
+        <div className="bg-white border border-ivory-border rounded-xl p-6">
+          <p className="text-xs text-slate-500 mb-4 bg-ivory border border-charcoal/10 rounded-lg px-4 py-2.5">
             Fill in your details so we can show you surveys that match your profile in the <strong>Suggested for you</strong> section. This info is private and never shown publicly.
           </p>
           <UpdateProfileForm profile={profile as Profile} />
@@ -92,29 +92,29 @@ export default async function ProfilePage() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-            <ToggleLeft size={18} className="text-indigo-500" /> My surveys
+            <ToggleLeft size={18} className="text-charcoal" /> My surveys
           </h2>
           <Link href="/submit"
-            className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+            className="flex items-center gap-1.5 text-xs bg-charcoal text-white px-3 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
             <Plus size={13} /> New survey
           </Link>
         </div>
 
         {!myForms?.length ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 text-sm">
+          <div className="bg-white border border-ivory-border rounded-xl p-8 text-center text-slate-400 text-sm">
             No surveys yet.{' '}
-            <Link href="/submit" className="text-indigo-600 hover:underline">Submit one →</Link>
+            <Link href="/submit" className="text-charcoal hover:underline">Submit one →</Link>
           </div>
         ) : (
           <div className="space-y-3">
             {myForms.map((f: any) => (
-              <div key={f.id} className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
+              <div key={f.id} className="bg-white border border-ivory-border rounded-xl p-5 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-ivory-dark text-slate-400'}`}>
                       {f.is_active ? 'Active' : 'Inactive'}
                     </span>
-                    {f.specialty && <span className="text-xs text-indigo-500">{f.specialty}</span>}
+                    {f.specialty && <span className="text-xs text-charcoal">{f.specialty}</span>}
                   </div>
                   <p className="font-medium text-slate-800 truncate text-sm">{f.title}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
@@ -125,7 +125,7 @@ export default async function ProfilePage() {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Link href={`/forms/${f.id}`}
-                    className="text-xs text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                    className="text-xs text-slate-500 border border-ivory-border px-3 py-1.5 rounded-lg hover:bg-ivory transition-colors">
                     View
                   </Link>
                   <DeactivateButton formId={f.id} isActive={f.is_active} />
@@ -142,16 +142,16 @@ export default async function ProfilePage() {
           <CheckCircle2 size={18} className="text-emerald-500" /> Surveys I filled
         </h2>
         {!myFills?.length ? (
-          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 text-sm">
+          <div className="bg-white border border-ivory-border rounded-xl p-8 text-center text-slate-400 text-sm">
             You haven't filled any surveys yet.{' '}
-            <Link href="/" className="text-indigo-600 hover:underline">Browse the feed →</Link>
+            <Link href="/" className="text-charcoal hover:underline">Browse the feed →</Link>
           </div>
         ) : (
           <div className="space-y-2">
             {myFills.map((fill: any) => (
-              <div key={fill.form_id} className="bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between">
+              <div key={fill.form_id} className="bg-white border border-ivory-border rounded-xl px-5 py-3.5 flex items-center justify-between">
                 <div>
-                  <Link href={`/forms/${fill.form_id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors">
+                  <Link href={`/forms/${fill.form_id}`} className="text-sm font-medium text-slate-700 hover:text-charcoal transition-colors">
                     {(fill.forms as any)?.title ?? 'Untitled survey'}
                   </Link>
                   <p className="text-xs text-slate-400 mt-0.5">
@@ -173,7 +173,7 @@ export default async function ProfilePage() {
           <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
             <Trophy size={18} className="text-amber-500" /> Referral points earned
           </h2>
-          <div className="bg-white border border-slate-200 rounded-xl p-5">
+          <div className="bg-white border border-ivory-border rounded-xl p-5">
             <p className="text-sm text-slate-600 mb-3">
               You've earned <strong className="text-emerald-600">{totalReferralPts} pts</strong> from {referralData?.length} people who filled surveys via your share links.
             </p>
