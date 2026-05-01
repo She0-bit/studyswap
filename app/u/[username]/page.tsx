@@ -78,9 +78,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 followerCount={followerCount}
               />
             )}
-            {/* Share profile */}
+            {/* Share profile — click wired up by CopyProfileLink <script> below */}
             <button
-              onClick={() => {}} // handled client-side via copy
               className="text-xs text-ivory/80 hover:text-white flex items-center gap-1 transition-colors"
               id="copy-profile-link"
             >
