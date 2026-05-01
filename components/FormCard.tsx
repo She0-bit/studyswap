@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Clock, Users, Trophy, BookOpen, MapPin, UserCheck } from 'lucide-react'
 import { roleLabel, type FormFeedItem } from '@/lib/types'
