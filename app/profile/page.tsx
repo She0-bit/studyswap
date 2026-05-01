@@ -13,29 +13,48 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth')
 
-  const [{ data: profile }, { data: myForms }, { data: myFills }, referralResult, { data: followerRows }, { data: followingRows }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', user.id).single(),
+  // Fetch everything defensively — each query isolated so one failure doesn't crash all
+  const { data: profileData } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+
+  // Upsert profile row if it doesn't exist yet (new users)
+  const profile: Profile = profileData ?? {
+    id: user.id,
+    name: null,
+    username: null,
+    institution: null,
+    specialty: null,
+    role: null,
+    age: null,
+    sex: null,
+    country: null,
+    points: 0,
+  }
+
+  const [formsResult, fillsResult, referralResult, followerResult, followingResult] = await Promise.all([
     supabase.from('forms').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.from('fills').select('form_id, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('referral_fills').select('id, points_awarded, filled_by, created_at').eq('referrer_id', user.id),
+    supabase.from('referral_fills').select('id, points_awarded, created_at').eq('referrer_id', user.id),
     supabase.from('follows').select('id').eq('following_id', user.id),
     supabase.from('follows').select('id').eq('follower_id', user.id),
   ])
 
+  const myForms      = formsResult.data ?? []
+  const myFills      = fillsResult.data ?? []
   const referralData = referralResult.error ? [] : (referralResult.data ?? [])
+  const followerCount  = followerResult.error ? 0 : (followerResult.data?.length ?? 0)
+  const followingCount = followingResult.error ? 0 : (followingResult.data?.length ?? 0)
 
-  // Fetch form titles for filled surveys separately
-  const fillFormIds = myFills?.map(f => f.form_id) ?? []
-  const { data: fillForms } = fillFormIds.length > 0
-    ? await supabase.from('forms').select('id, title').in('id', fillFormIds)
-    : { data: [] }
-  const fillFormMap = Object.fromEntries((fillForms ?? []).map(f => [f.id, f.title]))
+  // Fetch form titles for filled surveys
+  const fillFormIds = myFills.map(f => f.form_id)
+  const fillFormMap: Record<string, string> = {}
+  if (fillFormIds.length > 0) {
+    const { data: fillForms } = await supabase.from('forms').select('id, title').in('id', fillFormIds)
+    fillForms?.forEach(f => { fillFormMap[f.id] = f.title })
+  }
 
-  const rankQuery = await supabase.from('profiles').select('id').gt('points', profile?.points ?? 0)
-  const rank = (rankQuery.data?.length ?? 0) + 1
-  const totalReferralPts = referralData?.reduce((a, r) => a + r.points_awarded, 0) ?? 0
-  const followerCount  = followerRows?.length ?? 0
-  const followingCount = followingRows?.length ?? 0
+  const { data: rankRows } = await supabase.from('profiles').select('id').gt('points', profile.points ?? 0)
+  const rank = (rankRows?.length ?? 0) + 1
+  const totalReferralPts = referralData.reduce((a: number, r: any) => a + (r.points_awarded ?? 0), 0)
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
@@ -44,8 +63,8 @@ export default async function ProfilePage() {
       <div className="bg-gradient-to-br from-charcoal to-charcoal-deep text-white rounded-2xl p-7">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold">{profile?.name || user.email}</h1>
-            {profile?.username ? (
+            <h1 className="text-xl font-bold">{profile.name || user.email}</h1>
+            {profile.username ? (
               <Link href={`/u/${profile.username}`}
                 className="inline-flex items-center gap-1 text-ivory/80 text-sm mt-0.5 hover:text-white transition-colors">
                 @{profile.username} <ExternalLink size={11} />
@@ -53,19 +72,19 @@ export default async function ProfilePage() {
             ) : (
               <p className="text-ivory/60 text-xs mt-0.5 italic">No username yet — set one below</p>
             )}
-            {profile?.institution && <p className="text-ivory/60 text-xs mt-0.5">{profile.institution}</p>}
+            {profile.institution && <p className="text-ivory/60 text-xs mt-0.5">{profile.institution}</p>}
           </div>
           <div className="text-right">
-            <div className="text-3xl font-bold">{profile?.points ?? 0}</div>
+            <div className="text-3xl font-bold">{profile.points ?? 0}</div>
             <div className="text-ivory/80 text-xs">total points</div>
           </div>
         </div>
         <div className="mt-5 grid grid-cols-5 gap-2">
           {[
-            { label: 'Feed rank',  value: `#${rank}` },
-            { label: 'Followers',  value: followerCount },
-            { label: 'Following',  value: followingCount },
-            { label: 'Filled',     value: myFills?.length ?? 0 },
+            { label: 'Feed rank',    value: `#${rank}` },
+            { label: 'Followers',    value: followerCount },
+            { label: 'Following',    value: followingCount },
+            { label: 'Filled',       value: myFills.length },
             { label: 'Referral pts', value: totalReferralPts },
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
@@ -74,9 +93,7 @@ export default async function ProfilePage() {
             </div>
           ))}
         </div>
-
-        {/* Username missing warning */}
-        {!profile?.username && (
+        {!profile.username && (
           <div className="mt-4 bg-amber-400/20 border border-amber-300/30 rounded-xl px-4 py-2.5 text-amber-100 text-xs">
             ⚠️ Set a username below so people can find and follow you, and to get your shareable profile link.
           </div>
@@ -91,9 +108,9 @@ export default async function ProfilePage() {
         </div>
         <div className="bg-white border border-ivory-border rounded-xl p-6">
           <p className="text-xs text-slate-500 mb-4 bg-ivory border border-charcoal/10 rounded-lg px-4 py-2.5">
-            Fill in your details so we can show you surveys that match your profile in the <strong>Suggested for you</strong> section. This info is private and never shown publicly.
+            Fill in your details so we can show you surveys that match your profile in the <strong>Suggested for you</strong> section.
           </p>
-          <UpdateProfileForm profile={profile as Profile} />
+          <UpdateProfileForm profile={profile} />
         </div>
       </section>
 
@@ -108,8 +125,7 @@ export default async function ProfilePage() {
             <Plus size={13} /> New survey
           </Link>
         </div>
-
-        {!myForms?.length ? (
+        {myForms.length === 0 ? (
           <div className="bg-white border border-ivory-border rounded-xl p-8 text-center text-slate-400 text-sm">
             No surveys yet.{' '}
             <Link href="/submit" className="text-charcoal hover:underline">Submit one →</Link>
@@ -120,16 +136,21 @@ export default async function ProfilePage() {
               <div key={f.id} className="bg-white border border-ivory-border rounded-xl p-5 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.is_active ? 'bg-emerald-50 text-emerald-600' : 'bg-ivory-dark text-slate-400'}`}>
-                      {f.is_active ? 'Active' : 'Inactive'}
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      f.is_active !== false ? 'bg-emerald-50 text-emerald-600' : 'bg-ivory-dark text-slate-400'
+                    }`}>
+                      {f.is_active !== false ? 'Active' : 'Inactive'}
                     </span>
                     {f.specialty && <span className="text-xs text-charcoal">{f.specialty}</span>}
                   </div>
                   <p className="font-medium text-slate-800 truncate text-sm">{f.title}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                     <span className="flex items-center gap-1"><Clock size={11} /> {f.estimated_minutes} min</span>
-                    <span className="flex items-center gap-1"><CheckCircle2 size={11} /> {f.fill_count} filled</span>
-                    <span className="flex items-center gap-1"><Trophy size={11} className="text-emerald-400" /> {f.fill_count * (10 + f.estimated_minutes * 2)} pts generated</span>
+                    <span className="flex items-center gap-1"><CheckCircle2 size={11} /> {f.fill_count ?? 0} filled</span>
+                    <span className="flex items-center gap-1">
+                      <Trophy size={11} className="text-emerald-400" />
+                      {(f.fill_count ?? 0) * (10 + (f.estimated_minutes ?? 0) * 2)} pts generated
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -137,7 +158,7 @@ export default async function ProfilePage() {
                     className="text-xs text-slate-500 border border-ivory-border px-3 py-1.5 rounded-lg hover:bg-ivory transition-colors">
                     View
                   </Link>
-                  <DeactivateButton formId={f.id} isActive={f.is_active} />
+                  <DeactivateButton formId={f.id} isActive={f.is_active !== false} />
                 </div>
               </div>
             ))}
@@ -150,7 +171,7 @@ export default async function ProfilePage() {
         <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
           <CheckCircle2 size={18} className="text-emerald-500" /> Surveys I filled
         </h2>
-        {!myFills?.length ? (
+        {myFills.length === 0 ? (
           <div className="bg-white border border-ivory-border rounded-xl p-8 text-center text-slate-400 text-sm">
             You haven't filled any surveys yet.{' '}
             <Link href="/" className="text-charcoal hover:underline">Browse the feed →</Link>
@@ -177,17 +198,17 @@ export default async function ProfilePage() {
       </section>
 
       {/* Referral fills */}
-      {(referralData?.length ?? 0) > 0 && (
+      {referralData.length > 0 && (
         <section>
           <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
             <Trophy size={18} className="text-amber-500" /> Referral points earned
           </h2>
           <div className="bg-white border border-ivory-border rounded-xl p-5">
             <p className="text-sm text-slate-600 mb-3">
-              You've earned <strong className="text-emerald-600">{totalReferralPts} pts</strong> from {referralData?.length} people who filled surveys via your share links.
+              You've earned <strong className="text-emerald-600">{totalReferralPts} pts</strong> from {referralData.length} people who filled surveys via your share links.
             </p>
             <div className="space-y-2">
-              {referralData?.map((r: any) => (
+              {referralData.map((r: any) => (
                 <div key={r.id} className="flex items-center justify-between text-xs text-slate-500">
                   <span>{new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   <span className="text-emerald-600 font-medium">+{r.points_awarded} pts</span>

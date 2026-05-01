@@ -73,11 +73,11 @@ export default async function HomePage({
       {/* Hero */}
       {!q && !specialty && (
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">
-            Fill surveys. Rank higher. Get responses.
+          <h1 className="text-4xl font-bold text-slate-800 mb-3">
+            Be someone's n=1
           </h1>
-          <p className="text-slate-500 max-w-xl mx-auto text-sm">
-            A platform where researchers exchange survey participation — fill others' surveys to move yours up the list.
+          <p className="text-slate-500 max-w-xl mx-auto text-base">
+            Fill surveys. Rank higher. Get responses.
           </p>
           {!user && (
             <div className="mt-5 flex items-center justify-center gap-3">

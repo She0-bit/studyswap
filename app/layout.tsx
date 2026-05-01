@@ -23,8 +23,12 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-ivory">
         <Navbar />
         <main className="flex-1">{children}</main>
-        <footer className="text-center text-xs text-slate-400 py-6 border-t border-ivory-border">
-          Be someone's n=1 · Built for researchers, by researchers
+        <footer className="text-center text-xs text-slate-400 py-6 border-t border-ivory-border space-y-1">
+          <p>Built for researchers, by Sheikah</p>
+          <p>
+            <a href="https://t.me/sheikah_x" target="_blank" rel="noopener noreferrer"
+              className="hover:text-charcoal transition-colors">@sheikah_x</a>
+          </p>
         </footer>
       </body>
     </html>

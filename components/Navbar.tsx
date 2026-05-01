@@ -40,12 +40,12 @@ export default function Navbar() {
 
   return (
     <nav className="bg-charcoal sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-6 h-18 flex items-center justify-between" style={{ height: '72px' }}>
+      <div className="max-w-5xl mx-auto px-6 flex items-center justify-between" style={{ height: '88px' }}>
 
         {/* Logo */}
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="n=1" className="h-12 w-auto" />
+          <img src="/logo.svg" alt="n=1" className="h-14 w-auto" />
         </Link>
 
         {/* Desktop nav */}
