@@ -50,6 +50,10 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden sm:flex items-center gap-4">
+          <Link href="/users"
+            className="flex items-center gap-1.5 text-sm text-ivory/70 hover:text-white px-2 py-1.5 transition-colors">
+            <User size={15} /> Find researchers
+          </Link>
           {user ? (
             <>
               <span className="text-sm font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
@@ -98,12 +102,16 @@ export default function Navbar() {
                   @{username}
                 </Link>
               )}
-              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">+ Submit survey</Link>
-              <Link href="/profile"   onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Settings</Link>
+              <Link href="/submit"  onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">+ Submit survey</Link>
+              <Link href="/users"   onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Find researchers</Link>
+              <Link href="/profile" onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Settings</Link>
               <button onClick={signOut} className="text-sm text-left text-red-400">Sign out</button>
             </>
           ) : (
-            <Link href="/auth" onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">Sign in</Link>
+            <>
+              <Link href="/auth"  onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">Sign in</Link>
+              <Link href="/users" onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Find researchers</Link>
+            </>
           )}
         </div>
       )}

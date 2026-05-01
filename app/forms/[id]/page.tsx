@@ -64,7 +64,14 @@ export default async function FormDetailPage({
           <h1 className="text-xl font-bold leading-snug">{f.title}</h1>
           <div className="mt-3 flex items-center gap-1.5 text-ivory/80 text-sm">
             <BookOpen size={14} />
-            <span>{f.submitter_name || 'Anonymous'}</span>
+            {f.submitter_username ? (
+              <Link href={`/u/${f.submitter_username}`}
+                className="hover:text-white underline underline-offset-2 transition-colors">
+                @{f.submitter_username}
+              </Link>
+            ) : (
+              <span>{f.submitter_name || 'Anonymous'}</span>
+            )}
             {f.submitter_institution && <span>· {f.submitter_institution}</span>}
           </div>
         </div>
