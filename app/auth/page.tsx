@@ -1,13 +1,21 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { FlaskConical, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 
 type Mode = 'login' | 'signup' | 'forgot'
 
 export default function AuthPage() {
+  return (
+    <Suspense>
+      <AuthForm />
+    </Suspense>
+  )
+}
+
+function AuthForm() {
   const [mode, setMode]               = useState<Mode>('login')
   const [name, setName]               = useState('')
   const [username, setUsername]       = useState('')
@@ -22,8 +30,17 @@ export default function AuthPage() {
   const [usernameStatus, setUsernameStatus] = useState<'idle'|'checking'|'available'|'taken'|'invalid'>('idle')
   const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const router = useRouter()
-  const supabase = createClient()
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const supabase     = createClient()
+
+  // Show friendly message if reset link expired
+  useEffect(() => {
+    if (searchParams.get('error') === 'link_expired') {
+      setError('That link has expired. Request a new one below.')
+      setMode('forgot')
+    }
+  }, [])
 
   useEffect(() => {
     if (!username || mode !== 'signup') { setUsernameStatus('idle'); return }
@@ -51,7 +68,7 @@ export default function AuthPage() {
 
     if (mode === 'forgot') {
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
       })
       if (resetErr) { setError(resetErr.message) } else {
         setSuccessMsg('Check your email — we sent a password reset link.')
