@@ -106,11 +106,19 @@ export default function FormCard({ form, rank, filledByMe, highlighted }: Props)
             <Trophy size={12} className="text-emerald-500" />
             <span className="text-emerald-600 font-medium">{form.submitter_points} pts</span>
           </span>
-          <span className="flex items-center gap-1">
-            <BookOpen size={12} />
-            {form.submitter_name || 'Anonymous'}
-            {form.submitter_institution ? ` · ${form.submitter_institution}` : ''}
-          </span>
+          {form.submitter_username ? (
+            <Link href={`/u/${form.submitter_username}`} onClick={e => e.stopPropagation()}
+              className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
+              <BookOpen size={12} />
+              @{form.submitter_username}
+              {form.submitter_institution ? ` · ${form.submitter_institution}` : ''}
+            </Link>
+          ) : (
+            <span className="flex items-center gap-1">
+              <BookOpen size={12} />
+              {form.submitter_name || 'Anonymous'}
+            </span>
+          )}
         </div>
       </div>
     </Link>

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import FormCard from '@/components/FormCard'
 import Link from 'next/link'
-import { Search, Trophy, Users, Zap, Sparkles } from 'lucide-react'
+import { Search, Trophy, Users, Zap, Sparkles, Rss } from 'lucide-react'
 import { matchesCriteria, SPECIALTY_GROUPS, type FormFeedItem, type Profile } from '@/lib/types'
 
 export const revalidate = 0
@@ -9,43 +9,55 @@ export const revalidate = 0
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; specialty?: string }>
+  searchParams: Promise<{ q?: string; specialty?: string; tab?: string }>
 }) {
-  const { q, specialty } = await searchParams
+  const { q, specialty, tab } = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch profile for "For You" matching
   let profile: Profile | null = null
   if (user) {
     const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
     profile = data
   }
 
-  // Build feed query
+  // ── Following feed ───────────────────────────────────────────
+  let followingFeed: FormFeedItem[] = []
+  let followingIds: string[] = []
+  if (user && tab === 'following') {
+    const { data: followRows } = await supabase
+      .from('follows').select('following_id').eq('follower_id', user.id)
+    followingIds = followRows?.map(r => r.following_id) ?? []
+    if (followingIds.length > 0) {
+      const { data } = await supabase
+        .from('forms_feed').select('*')
+        .in('user_id', followingIds)
+        .order('submitter_points', { ascending: false })
+      followingFeed = (data ?? []) as FormFeedItem[]
+    }
+  }
+
+  // ── Main feed ────────────────────────────────────────────────
   let query = supabase
-    .from('forms_feed')
-    .select('*')
+    .from('forms_feed').select('*')
     .order('submitter_points', { ascending: false })
     .limit(100)
-
   if (specialty) query = query.eq('specialty', specialty)
   if (q) query = query.ilike('title', `%${q}%`)
-
   const { data: forms } = await query
   const feed = (forms ?? []) as FormFeedItem[]
 
   // Fills by current user
   let myFillIds = new Set<string>()
   if (user) {
-    const { data: fills } = await supabase
-      .from('fills').select('form_id').eq('user_id', user.id)
+    const { data: fills } = await supabase.from('fills').select('form_id').eq('user_id', user.id)
     fills?.forEach(f => myFillIds.add(f.form_id))
   }
 
-  // "For You" — forms matching user's profile that they haven't filled and don't own
-  const forYou = profile && !q && !specialty
+  // ── For You matching ─────────────────────────────────────────
+  const hasProfileForMatching = profile && (profile.role || profile.age || profile.sex || profile.country)
+  const forYou = profile && !q && !specialty && tab !== 'following'
     ? feed.filter(f =>
         !myFillIds.has(f.id) &&
         f.user_id !== user?.id &&
@@ -53,7 +65,7 @@ export default async function HomePage({
       ).slice(0, 5)
     : []
 
-  const hasProfileForMatching = profile && (profile.role || profile.age || profile.sex || profile.country)
+  const activeTab = tab === 'following' && user ? 'following' : 'all'
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -95,29 +107,26 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* For You section */}
-      {user && !q && !specialty && (
+      {/* For You */}
+      {user && !q && !specialty && activeTab === 'all' && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles size={16} className="text-indigo-500" />
             <h2 className="font-semibold text-slate-800">Suggested for you</h2>
             <span className="text-xs text-slate-400 ml-1">surveys matching your profile</span>
           </div>
-
           {!hasProfileForMatching ? (
             <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-5 py-4 text-sm text-indigo-700 flex items-center justify-between">
               <span>Complete your profile to see surveys tailored to you</span>
-              <Link href="/profile" className="font-medium underline underline-offset-2 shrink-0 ml-4">
-                Update profile →
-              </Link>
+              <Link href="/profile" className="font-medium underline underline-offset-2 shrink-0 ml-4">Update profile →</Link>
             </div>
           ) : forYou.length === 0 ? (
             <div className="bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-sm text-slate-500">
-              No matching surveys right now — check back later or browse all surveys below.
+              No matching surveys right now — check back later.
             </div>
           ) : (
             <div className="space-y-3">
-              {forYou.map((form, i) => (
+              {forYou.map(form => (
                 <FormCard key={form.id} form={form} rank={feed.indexOf(form) + 1} filledByMe={false} highlighted />
               ))}
             </div>
@@ -125,8 +134,8 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* Search + specialty filter */}
-      <div id="feed" className="mb-6 flex flex-col sm:flex-row gap-3">
+      {/* Search + filter */}
+      <div id="feed" className="mb-5 flex flex-col sm:flex-row gap-3">
         <form method="GET" className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input name="q" defaultValue={q} placeholder="Search by title…"
@@ -146,23 +155,46 @@ export default async function HomePage({
           {q && <input type="hidden" name="q" value={q} />}
         </form>
         {(q || specialty) && (
-          <Link href="/" className="self-center text-sm text-slate-400 hover:text-slate-600 whitespace-nowrap">
-            Clear filters
+          <Link href="/" className="self-center text-sm text-slate-400 hover:text-slate-600 whitespace-nowrap">Clear filters</Link>
+        )}
+      </div>
+
+      {/* Tabs */}
+      {user && (
+        <div className="flex gap-1 mb-5 bg-slate-100 p-1 rounded-xl w-fit">
+          <Link href="/" className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'all' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}>
+            <Users size={14} /> All surveys
           </Link>
-        )}
-      </div>
+          <Link href="/?tab=following" className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            activeTab === 'following' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+          }`}>
+            <Rss size={14} /> Following
+          </Link>
+        </div>
+      )}
 
-      {/* Main feed */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-semibold text-slate-700 text-sm">
-          {q || specialty ? 'Search results' : 'All surveys'} · sorted by points
-        </h2>
-        {!user && (
-          <Link href="/auth" className="text-xs text-indigo-600 hover:underline">Sign in to fill & earn points</Link>
-        )}
-      </div>
-
-      {feed.length === 0 ? (
+      {/* Feed */}
+      {activeTab === 'following' ? (
+        followingIds.length === 0 ? (
+          <div className="text-center py-16 text-slate-400">
+            <Rss size={32} className="mx-auto mb-3 opacity-30" />
+            <p className="font-medium mb-1">You're not following anyone yet</p>
+            <p className="text-sm">Browse surveys, click a researcher's name, and follow them to see their work here.</p>
+          </div>
+        ) : followingFeed.length === 0 ? (
+          <div className="text-center py-16 text-slate-400 text-sm">
+            The people you follow haven't posted any surveys yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {followingFeed.map((form, i) => (
+              <FormCard key={form.id} form={form} rank={i + 1} filledByMe={myFillIds.has(form.id)} />
+            ))}
+          </div>
+        )
+      ) : feed.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
           <p className="text-lg mb-2">No surveys found</p>
           <p className="text-sm">

@@ -8,10 +8,11 @@ import { FlaskConical, Plus, User, LogOut, Menu, X } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
-  const [user, setUser] = useState<SupabaseUser | null>(null)
-  const [points, setPoints] = useState(0)
+  const [user, setUser]       = useState<SupabaseUser | null>(null)
+  const [points, setPoints]   = useState(0)
+  const [username, setUsername] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-  const router = useRouter()
+  const router   = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
 
@@ -24,13 +25,11 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    if (!user) return setPoints(0)
-    supabase
-      .from('profiles')
-      .select('points')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => { if (data) setPoints(data.points) })
+    if (!user) { setPoints(0); setUsername(null); return }
+    supabase.from('profiles').select('points, username').eq('id', user.id).single()
+      .then(({ data }) => {
+        if (data) { setPoints(data.points); setUsername(data.username) }
+      })
   }, [user, pathname])
 
   async function signOut() {
@@ -38,6 +37,8 @@ export default function Navbar() {
     router.push('/')
     router.refresh()
   }
+
+  const profileHref = username ? `/u/${username}` : '/profile'
 
   return (
     <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
@@ -54,30 +55,27 @@ export default function Navbar() {
               <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
                 {points} pts
               </span>
-              <Link
-                href="/submit"
-                className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                <Plus size={15} /> Submit Form
+              <Link href="/submit"
+                className="flex items-center gap-1.5 text-sm bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+                <Plus size={15} /> Submit
               </Link>
-              <Link
-                href="/profile"
-                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-600 px-2 py-1.5 transition-colors"
-              >
-                <User size={15} /> Profile
+              <Link href={profileHref}
+                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-indigo-600 px-2 py-1.5 transition-colors">
+                <User size={15} />
+                {username ? <span>@{username}</span> : <span>Profile</span>}
               </Link>
-              <button
-                onClick={signOut}
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 px-2 py-1.5 transition-colors"
-              >
+              <Link href="/profile"
+                className="text-xs text-slate-400 hover:text-slate-600 px-1 py-1.5 transition-colors">
+                Settings
+              </Link>
+              <button onClick={signOut}
+                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 px-2 py-1.5 transition-colors">
                 <LogOut size={15} />
               </button>
             </>
           ) : (
-            <Link
-              href="/auth"
-              className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
-            >
+            <Link href="/auth"
+              className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
               Sign in
             </Link>
           )}
@@ -95,8 +93,13 @@ export default function Navbar() {
           {user ? (
             <>
               <span className="text-sm font-medium text-emerald-600">{points} points</span>
-              <Link href="/submit" onClick={() => setMenuOpen(false)} className="text-sm text-indigo-600 font-medium">+ Submit Form</Link>
-              <Link href="/profile" onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">Profile</Link>
+              {username && (
+                <Link href={`/u/${username}`} onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">
+                  @{username}
+                </Link>
+              )}
+              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-indigo-600 font-medium">+ Submit survey</Link>
+              <Link href="/profile"   onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">Settings</Link>
               <button onClick={signOut} className="text-sm text-left text-red-500">Sign out</button>
             </>
           ) : (

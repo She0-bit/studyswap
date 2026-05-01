@@ -1,6 +1,7 @@
 export type Profile = {
   id: string
   name: string
+  username: string | null
   institution: string
   specialty: string
   points: number
@@ -48,6 +49,7 @@ export type FormFeedItem = {
   user_id: string
   sample_criteria: SampleCriteria | null
   submitter_name: string
+  submitter_username: string | null
   submitter_institution: string
   submitter_points: number
 }

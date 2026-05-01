@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Clock, Plus, ToggleLeft, CheckCircle2, UserCircle } from 'lucide-react'
+import { Trophy, Clock, Plus, ToggleLeft, CheckCircle2, UserCircle, ExternalLink } from 'lucide-react'
 import DeactivateButton from './DeactivateButton'
 import UpdateProfileForm from './UpdateProfileForm'
 import type { Profile } from '@/lib/types'
@@ -13,16 +13,20 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth')
 
-  const [{ data: profile }, { data: myForms }, { data: myFills }, { data: referralData }] = await Promise.all([
+  const [{ data: profile }, { data: myForms }, { data: myFills }, { data: referralData }, { data: followerRows }, { data: followingRows }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('forms').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.from('fills').select('form_id, filled_at, forms(title, id)').eq('user_id', user.id).order('filled_at', { ascending: false }),
     supabase.from('referral_fills').select('id, points_awarded, filled_by, created_at').eq('referrer_id', user.id),
+    supabase.from('follows').select('id').eq('following_id', user.id),
+    supabase.from('follows').select('id').eq('follower_id', user.id),
   ])
 
   const rankQuery = await supabase.from('profiles').select('id').gt('points', profile?.points ?? 0)
   const rank = (rankQuery.data?.length ?? 0) + 1
   const totalReferralPts = referralData?.reduce((a, r) => a + r.points_awarded, 0) ?? 0
+  const followerCount  = followerRows?.length ?? 0
+  const followingCount = followingRows?.length ?? 0
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
@@ -32,18 +36,27 @@ export default async function ProfilePage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold">{profile?.name || user.email}</h1>
-            {profile?.institution && <p className="text-indigo-200 text-sm mt-0.5">{profile.institution}</p>}
+            {profile?.username ? (
+              <Link href={`/u/${profile.username}`}
+                className="inline-flex items-center gap-1 text-indigo-200 text-sm mt-0.5 hover:text-white transition-colors">
+                @{profile.username} <ExternalLink size={11} />
+              </Link>
+            ) : (
+              <p className="text-indigo-300 text-xs mt-0.5 italic">No username yet — set one below</p>
+            )}
+            {profile?.institution && <p className="text-indigo-300 text-xs mt-0.5">{profile.institution}</p>}
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">{profile?.points ?? 0}</div>
             <div className="text-indigo-200 text-xs">total points</div>
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-4 gap-3">
+        <div className="mt-5 grid grid-cols-5 gap-2">
           {[
-            { label: 'Feed rank', value: `#${rank}` },
-            { label: 'Surveys submitted', value: myForms?.length ?? 0 },
-            { label: 'Surveys filled', value: myFills?.length ?? 0 },
+            { label: 'Feed rank',  value: `#${rank}` },
+            { label: 'Followers',  value: followerCount },
+            { label: 'Following',  value: followingCount },
+            { label: 'Filled',     value: myFills?.length ?? 0 },
             { label: 'Referral pts', value: totalReferralPts },
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
@@ -52,6 +65,13 @@ export default async function ProfilePage() {
             </div>
           ))}
         </div>
+
+        {/* Username missing warning */}
+        {!profile?.username && (
+          <div className="mt-4 bg-amber-400/20 border border-amber-300/30 rounded-xl px-4 py-2.5 text-amber-100 text-xs">
+            ⚠️ Set a username below so people can find and follow you, and to get your shareable profile link.
+          </div>
+        )}
       </div>
 
       {/* Edit profile */}
