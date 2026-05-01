@@ -44,7 +44,7 @@ export default function Navbar() {
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="n=1" className="h-8 w-auto" />
+          <img src="/logo.svg" alt="n=1" className="h-10 w-auto" />
         </Link>
 
         {/* Desktop */}

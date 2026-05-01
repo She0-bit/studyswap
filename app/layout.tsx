@@ -24,7 +24,7 @@ export default function RootLayout({
         <Navbar />
         <main className="flex-1">{children}</main>
         <footer className="text-center text-xs text-slate-400 py-6 border-t border-ivory-border">
-          n=1 · Built for med students, by med students
+          Be someone's n=1 · Built for researchers, by researchers
         </footer>
       </body>
     </html>
