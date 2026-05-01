@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Trophy, Clock, Plus, ToggleLeft, CheckCircle2 } from 'lucide-react'
+import { Trophy, Clock, Plus, ToggleLeft, CheckCircle2, UserCircle } from 'lucide-react'
 import DeactivateButton from './DeactivateButton'
+import UpdateProfileForm from './UpdateProfileForm'
+import type { Profile } from '@/lib/types'
 
 export const revalidate = 0
 
@@ -11,42 +13,38 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth')
 
-  const [{ data: profile }, { data: myForms }, { data: myFills }] = await Promise.all([
+  const [{ data: profile }, { data: myForms }, { data: myFills }, { data: referralData }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('forms').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase
-      .from('fills')
-      .select('form_id, filled_at, forms(title, id)')
-      .eq('user_id', user.id)
-      .order('filled_at', { ascending: false }),
+    supabase.from('fills').select('form_id, filled_at, forms(title, id)').eq('user_id', user.id).order('filled_at', { ascending: false }),
+    supabase.from('referral_fills').select('id, points_awarded, filled_by, created_at').eq('referrer_id', user.id),
   ])
 
-  const rankQuery = await supabase
-    .from('profiles')
-    .select('id')
-    .gt('points', profile?.points ?? 0)
+  const rankQuery = await supabase.from('profiles').select('id').gt('points', profile?.points ?? 0)
   const rank = (rankQuery.data?.length ?? 0) + 1
+  const totalReferralPts = referralData?.reduce((a, r) => a + r.points_awarded, 0) ?? 0
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
-      {/* Profile header */}
+
+      {/* Header card */}
       <div className="bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-2xl p-7">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-xl font-bold">{profile?.name || user.email}</h1>
             {profile?.institution && <p className="text-indigo-200 text-sm mt-0.5">{profile.institution}</p>}
-            {profile?.specialty && <p className="text-indigo-300 text-xs mt-0.5">{profile.specialty}</p>}
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold">{profile?.points ?? 0}</div>
-            <div className="text-indigo-200 text-xs">points</div>
+            <div className="text-indigo-200 text-xs">total points</div>
           </div>
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-3">
+        <div className="mt-5 grid grid-cols-4 gap-3">
           {[
             { label: 'Feed rank', value: `#${rank}` },
-            { label: 'Forms submitted', value: myForms?.length ?? 0 },
-            { label: 'Forms filled', value: myFills?.length ?? 0 },
+            { label: 'Surveys submitted', value: myForms?.length ?? 0 },
+            { label: 'Surveys filled', value: myFills?.length ?? 0 },
+            { label: 'Referral pts', value: totalReferralPts },
           ].map(s => (
             <div key={s.label} className="bg-white/10 rounded-xl p-3 text-center">
               <div className="text-lg font-bold">{s.value}</div>
@@ -56,28 +54,40 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* My forms */}
+      {/* Edit profile */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <UserCircle size={18} className="text-indigo-500" />
+          <h2 className="font-semibold text-slate-800">My profile</h2>
+        </div>
+        <div className="bg-white border border-slate-200 rounded-xl p-6">
+          <p className="text-xs text-slate-500 mb-4 bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-2.5">
+            Fill in your details so we can show you surveys that match your profile in the <strong>Suggested for you</strong> section. This info is private and never shown publicly.
+          </p>
+          <UpdateProfileForm profile={profile as Profile} />
+        </div>
+      </section>
+
+      {/* My surveys */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-            <ToggleLeft size={18} className="text-indigo-500" /> My forms
+            <ToggleLeft size={18} className="text-indigo-500" /> My surveys
           </h2>
-          <Link
-            href="/submit"
-            className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <Plus size={13} /> New form
+          <Link href="/submit"
+            className="flex items-center gap-1.5 text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+            <Plus size={13} /> New survey
           </Link>
         </div>
 
         {!myForms?.length ? (
           <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 text-sm">
-            You haven't submitted any forms yet.{' '}
-            <Link href="/submit" className="text-indigo-600 hover:underline">Submit one now →</Link>
+            No surveys yet.{' '}
+            <Link href="/submit" className="text-indigo-600 hover:underline">Submit one →</Link>
           </div>
         ) : (
           <div className="space-y-3">
-            {myForms.map(f => (
+            {myForms.map((f: any) => (
               <div key={f.id} className="bg-white border border-slate-200 rounded-xl p-5 flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -90,14 +100,12 @@ export default async function ProfilePage() {
                   <div className="flex items-center gap-3 mt-1 text-xs text-slate-400">
                     <span className="flex items-center gap-1"><Clock size={11} /> {f.estimated_minutes} min</span>
                     <span className="flex items-center gap-1"><CheckCircle2 size={11} /> {f.fill_count} filled</span>
-                    <span className="flex items-center gap-1"><Trophy size={11} className="text-emerald-400" /> {f.fill_count * (10 + f.estimated_minutes * 2)} pts earned</span>
+                    <span className="flex items-center gap-1"><Trophy size={11} className="text-emerald-400" /> {f.fill_count * (10 + f.estimated_minutes * 2)} pts generated</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Link
-                    href={`/forms/${f.id}`}
-                    className="text-xs text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors"
-                  >
+                  <Link href={`/forms/${f.id}`}
+                    className="text-xs text-slate-500 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors">
                     View
                   </Link>
                   <DeactivateButton formId={f.id} isActive={f.is_active} />
@@ -108,15 +116,14 @@ export default async function ProfilePage() {
         )}
       </section>
 
-      {/* Forms I filled */}
+      {/* Surveys I filled */}
       <section>
         <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
-          <CheckCircle2 size={18} className="text-emerald-500" /> Forms I filled
+          <CheckCircle2 size={18} className="text-emerald-500" /> Surveys I filled
         </h2>
-
         {!myFills?.length ? (
           <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-400 text-sm">
-            You haven't filled any forms yet.{' '}
+            You haven't filled any surveys yet.{' '}
             <Link href="/" className="text-indigo-600 hover:underline">Browse the feed →</Link>
           </div>
         ) : (
@@ -125,20 +132,42 @@ export default async function ProfilePage() {
               <div key={fill.form_id} className="bg-white border border-slate-200 rounded-xl px-5 py-3.5 flex items-center justify-between">
                 <div>
                   <Link href={`/forms/${fill.form_id}`} className="text-sm font-medium text-slate-700 hover:text-indigo-600 transition-colors">
-                    {fill.forms?.title ?? 'Untitled form'}
+                    {(fill.forms as any)?.title ?? 'Untitled survey'}
                   </Link>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {new Date(fill.filled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
                 <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                  +pts earned
+                  pts earned
                 </span>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {/* Referral fills */}
+      {(referralData?.length ?? 0) > 0 && (
+        <section>
+          <h2 className="font-semibold text-slate-800 flex items-center gap-2 mb-4">
+            <Trophy size={18} className="text-amber-500" /> Referral points earned
+          </h2>
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
+            <p className="text-sm text-slate-600 mb-3">
+              You've earned <strong className="text-emerald-600">{totalReferralPts} pts</strong> from {referralData?.length} people who filled surveys via your share links.
+            </p>
+            <div className="space-y-2">
+              {referralData?.map((r: any) => (
+                <div key={r.id} className="flex items-center justify-between text-xs text-slate-500">
+                  <span>{new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                  <span className="text-emerald-600 font-medium">+{r.points_awarded} pts</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

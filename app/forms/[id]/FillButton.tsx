@@ -6,34 +6,33 @@ import { createClient } from '@/lib/supabase-browser'
 import { ExternalLink, CheckCircle, Loader2 } from 'lucide-react'
 
 type Props = {
-  formId: string
-  formLink: string
+  formId:           string
+  formLink:         string
   estimatedMinutes: number
-  pointsReward: number
-  isLoggedIn: boolean
-  isOwner: boolean
-  alreadyFilled: boolean
+  pointsReward:     number
+  isLoggedIn:       boolean
+  isOwner:          boolean
+  alreadyFilled:    boolean
+  referrerId:       string | null
 }
 
-type Phase = 'idle' | 'opened' | 'waiting' | 'ready' | 'claiming' | 'done'
+type Phase = 'idle' | 'waiting' | 'ready' | 'claiming' | 'done'
 
 export default function FillButton({
   formId, formLink, estimatedMinutes, pointsReward,
-  isLoggedIn, isOwner, alreadyFilled,
+  isLoggedIn, isOwner, alreadyFilled, referrerId,
 }: Props) {
-  const [phase, setPhase] = useState<Phase>(alreadyFilled ? 'done' : 'idle')
+  const [phase, setPhase]           = useState<Phase>(alreadyFilled ? 'done' : 'idle')
   const [secondsLeft, setSecondsLeft] = useState(0)
-  const [error, setError] = useState('')
+  const [error, setError]           = useState('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const router = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
 
-  // Minimum wait = estimated time in seconds (capped 30s–300s for UX)
+  // Wait = estimated minutes in seconds, capped between 30s and 300s
   const waitSeconds = Math.min(Math.max(estimatedMinutes * 60, 30), 300)
 
-  useEffect(() => {
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [])
+  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
 
   function openForm() {
     window.open(formLink, '_blank', 'noopener,noreferrer')
@@ -41,11 +40,7 @@ export default function FillButton({
     setSecondsLeft(waitSeconds)
     timerRef.current = setInterval(() => {
       setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!)
-          setPhase('ready')
-          return 0
-        }
+        if (s <= 1) { clearInterval(timerRef.current!); setPhase('ready'); return 0 }
         return s - 1
       })
     }, 1000)
@@ -54,23 +49,20 @@ export default function FillButton({
   async function claimPoints() {
     setPhase('claiming')
     setError('')
-    const { error: rpcError } = await supabase.rpc('fill_form', { form_id_input: formId })
-    if (rpcError) {
-      setError(rpcError.message)
-      setPhase('ready')
-      return
-    }
+    const { error: rpcError } = await supabase.rpc('fill_form', {
+      form_id_input:     formId,
+      referrer_id_input: referrerId ?? null,
+    })
+    if (rpcError) { setError(rpcError.message); setPhase('ready'); return }
     setPhase('done')
     router.refresh()
   }
 
   if (!isLoggedIn) {
     return (
-      <a
-        href="/auth"
-        className="block w-full text-center bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
-      >
-        Sign in to fill this form & earn {pointsReward} pts
+      <a href="/auth"
+        className="block w-full text-center bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors">
+        Sign in to fill this survey & earn {pointsReward} pts
       </a>
     )
   }
@@ -78,7 +70,7 @@ export default function FillButton({
   if (isOwner) {
     return (
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center text-sm text-slate-500">
-        This is your form — share it to get more responses!
+        This is your survey — share it to get more responses!
       </div>
     )
   }
@@ -87,7 +79,7 @@ export default function FillButton({
     return (
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
         <CheckCircle className="text-emerald-500 mx-auto mb-2" size={28} />
-        <p className="font-semibold text-emerald-700">You filled this form!</p>
+        <p className="font-semibold text-emerald-700">You filled this survey!</p>
         <p className="text-sm text-emerald-600 mt-0.5">+{pointsReward} points added to your account</p>
       </div>
     )
@@ -100,36 +92,28 @@ export default function FillButton({
       )}
 
       {phase === 'idle' && (
-        <button
-          onClick={openForm}
-          className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
-        >
+        <button onClick={openForm}
+          className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors">
           <ExternalLink size={16} />
-          Open & fill this form (earn +{pointsReward} pts)
+          Open & fill this survey (earn +{pointsReward} pts)
         </button>
       )}
 
       {phase === 'waiting' && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center space-y-3">
           <Loader2 className="text-amber-500 mx-auto animate-spin" size={24} />
-          <p className="text-sm font-medium text-amber-700">
-            Fill out the form, then come back here
-          </p>
+          <p className="text-sm font-medium text-amber-700">Fill out the survey, then come back here</p>
           <div className="text-3xl font-bold text-amber-600 tabular-nums">
             {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:
             {(secondsLeft % 60).toString().padStart(2, '0')}
           </div>
-          <p className="text-xs text-amber-500">
-            Claim your points when the timer reaches 0
-          </p>
+          <p className="text-xs text-amber-500">Claim your points when the timer reaches 0</p>
         </div>
       )}
 
       {phase === 'ready' && (
-        <button
-          onClick={claimPoints}
-          className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-emerald-700 transition-colors animate-pulse"
-        >
+        <button onClick={claimPoints}
+          className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-emerald-700 transition-colors">
           <CheckCircle size={16} />
           I filled it — claim +{pointsReward} points!
         </button>
@@ -143,7 +127,7 @@ export default function FillButton({
 
       {(phase === 'waiting' || phase === 'ready') && (
         <p className="text-xs text-slate-400 text-center">
-          The form opened in a new tab. Complete it there, then come back and claim your points.
+          The survey opened in a new tab. Complete it there, then come back and claim your points.
         </p>
       )}
     </div>
