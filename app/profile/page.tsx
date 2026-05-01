@@ -13,14 +13,23 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth')
 
-  const [{ data: profile }, { data: myForms }, { data: myFills }, { data: referralData }, { data: followerRows }, { data: followingRows }] = await Promise.all([
+  const [{ data: profile }, { data: myForms }, { data: myFills }, referralResult, { data: followerRows }, { data: followingRows }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase.from('forms').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    supabase.from('fills').select('form_id, filled_at, forms(title, id)').eq('user_id', user.id).order('filled_at', { ascending: false }),
+    supabase.from('fills').select('form_id, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.from('referral_fills').select('id, points_awarded, filled_by, created_at').eq('referrer_id', user.id),
     supabase.from('follows').select('id').eq('following_id', user.id),
     supabase.from('follows').select('id').eq('follower_id', user.id),
   ])
+
+  const referralData = referralResult.error ? [] : (referralResult.data ?? [])
+
+  // Fetch form titles for filled surveys separately
+  const fillFormIds = myFills?.map(f => f.form_id) ?? []
+  const { data: fillForms } = fillFormIds.length > 0
+    ? await supabase.from('forms').select('id, title').in('id', fillFormIds)
+    : { data: [] }
+  const fillFormMap = Object.fromEntries((fillForms ?? []).map(f => [f.id, f.title]))
 
   const rankQuery = await supabase.from('profiles').select('id').gt('points', profile?.points ?? 0)
   const rank = (rankQuery.data?.length ?? 0) + 1
@@ -152,10 +161,10 @@ export default async function ProfilePage() {
               <div key={fill.form_id} className="bg-white border border-ivory-border rounded-xl px-5 py-3.5 flex items-center justify-between">
                 <div>
                   <Link href={`/forms/${fill.form_id}`} className="text-sm font-medium text-slate-700 hover:text-charcoal transition-colors">
-                    {(fill.forms as any)?.title ?? 'Untitled survey'}
+                    {fillFormMap[fill.form_id] ?? 'Untitled survey'}
                   </Link>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {new Date(fill.filled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    {new Date(fill.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
                 <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">

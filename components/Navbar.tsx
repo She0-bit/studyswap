@@ -1,18 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { Plus, User, LogOut, Menu, X } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
-  const [user, setUser]       = useState<SupabaseUser | null>(null)
-  const [points, setPoints]   = useState(0)
+  const [user, setUser]         = useState<SupabaseUser | null>(null)
+  const [points, setPoints]     = useState(0)
   const [username, setUsername] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
-  const router   = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
 
@@ -40,69 +39,71 @@ export default function Navbar() {
   const profileHref = username ? `/u/${username}` : '/profile'
 
   return (
-    <nav className="bg-white border-b border-ivory-border sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+    <nav className="bg-charcoal sticky top-0 z-50">
+      <div className="max-w-5xl mx-auto px-6 h-18 flex items-center justify-between" style={{ height: '72px' }}>
+
+        {/* Logo */}
         <Link href="/" className="flex items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="n=1" className="h-10 w-auto" />
+          <img src="/logo.svg" alt="n=1" className="h-12 w-auto" />
         </Link>
 
-        {/* Desktop */}
-        <div className="hidden sm:flex items-center gap-3">
+        {/* Desktop nav */}
+        <div className="hidden sm:flex items-center gap-4">
           {user ? (
             <>
-              <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+              <span className="text-sm font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
                 {points} pts
               </span>
               <Link href="/submit"
-                className="flex items-center gap-1.5 text-sm bg-charcoal text-white px-3 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
+                className="flex items-center gap-1.5 text-sm bg-ivory text-charcoal px-3 py-1.5 rounded-lg hover:bg-ivory-dark transition-colors font-medium">
                 <Plus size={15} /> Submit
               </Link>
               <Link href={profileHref}
-                className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-charcoal px-2 py-1.5 transition-colors">
+                className="flex items-center gap-1.5 text-sm text-ivory/80 hover:text-white px-2 py-1.5 transition-colors">
                 <User size={15} />
                 {username ? <span>@{username}</span> : <span>Profile</span>}
               </Link>
               <Link href="/profile"
-                className="text-xs text-slate-400 hover:text-slate-600 px-1 py-1.5 transition-colors">
+                className="text-xs text-ivory/50 hover:text-ivory/80 px-1 py-1.5 transition-colors">
                 Settings
               </Link>
               <button onClick={signOut}
-                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 px-2 py-1.5 transition-colors">
+                className="flex items-center gap-1.5 text-sm text-ivory/50 hover:text-red-400 px-2 py-1.5 transition-colors">
                 <LogOut size={15} />
               </button>
             </>
           ) : (
             <Link href="/auth"
-              className="text-sm bg-charcoal text-white px-4 py-1.5 rounded-lg hover:bg-charcoal-deep transition-colors">
+              className="text-sm bg-ivory text-charcoal px-4 py-1.5 rounded-lg hover:bg-ivory-dark transition-colors font-medium">
               Sign in
             </Link>
           )}
         </div>
 
         {/* Mobile burger */}
-        <button className="sm:hidden" onClick={() => setMenuOpen(o => !o)}>
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
+        <button className="sm:hidden text-ivory/80 hover:text-white" onClick={() => setMenuOpen(o => !o)}>
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="sm:hidden border-t border-ivory-border bg-white px-4 py-3 flex flex-col gap-3">
+        <div className="sm:hidden border-t border-white/10 bg-charcoal-deep px-5 py-4 flex flex-col gap-4">
           {user ? (
             <>
-              <span className="text-sm font-medium text-emerald-600">{points} points</span>
+              <span className="text-sm font-medium text-emerald-400">{points} points</span>
               {username && (
-                <Link href={`/u/${username}`} onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">
+                <Link href={`/u/${username}`} onClick={() => setMenuOpen(false)} className="text-sm text-ivory/80">
                   @{username}
                 </Link>
               )}
-              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-charcoal font-medium">+ Submit survey</Link>
-              <Link href="/profile"   onClick={() => setMenuOpen(false)} className="text-sm text-slate-600">Settings</Link>
-              <button onClick={signOut} className="text-sm text-left text-red-500">Sign out</button>
+              <Link href="/submit"    onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">+ Submit survey</Link>
+              <Link href="/profile"   onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Settings</Link>
+              <button onClick={signOut} className="text-sm text-left text-red-400">Sign out</button>
             </>
           ) : (
-            <Link href="/auth" onClick={() => setMenuOpen(false)} className="text-sm text-charcoal font-medium">Sign in</Link>
+            <Link href="/auth" onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">Sign in</Link>
           )}
         </div>
       )}
