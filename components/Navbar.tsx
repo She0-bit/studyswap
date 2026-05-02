@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { Plus, User, LogOut, Menu, X } from 'lucide-react'
+import { Plus, User, LogOut, Menu, X, Trophy } from 'lucide-react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
@@ -50,6 +50,10 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden sm:flex items-center gap-4">
+          <Link href="/leaderboard"
+            className="flex items-center gap-1.5 text-sm text-ivory/70 hover:text-white px-2 py-1.5 transition-colors">
+            <Trophy size={15} /> Leaderboard
+          </Link>
           <Link href="/users"
             className="flex items-center gap-1.5 text-sm text-ivory/70 hover:text-white px-2 py-1.5 transition-colors">
             <User size={15} /> Find researchers
@@ -102,8 +106,9 @@ export default function Navbar() {
                   @{username}
                 </Link>
               )}
-              <Link href="/submit"  onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">+ Submit survey</Link>
-              <Link href="/users"   onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Find researchers</Link>
+              <Link href="/submit"      onClick={() => setMenuOpen(false)} className="text-sm text-ivory font-medium">+ Submit survey</Link>
+              <Link href="/leaderboard" onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">🏆 Leaderboard</Link>
+              <Link href="/users"       onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Find researchers</Link>
               <Link href="/profile" onClick={() => setMenuOpen(false)} className="text-sm text-ivory/70">Settings</Link>
               <button onClick={signOut} className="text-sm text-left text-red-400">Sign out</button>
             </>
