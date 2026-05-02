@@ -49,6 +49,16 @@ export default async function LeaderboardPage({
   }))
 
   const ranking = activeTab === 'monthly' ? monthlyRanking : allTimeRanking
+
+  // Dense rank: tied points → same rank, next rank continues from rank+1 (not position+1)
+  const denseRanks: number[] = []
+  let currentRank = 0
+  let lastPts = -1
+  for (const u of ranking) {
+    if (u.points !== lastPts) { currentRank++; lastPts = u.points }
+    denseRanks.push(currentRank)
+  }
+
   const [gold, silver, bronze] = ranking
 
   return (
@@ -106,8 +116,9 @@ export default async function LeaderboardPage({
           {/* Full ranked list */}
           <div className="space-y-2">
             {ranking.map((u, i) => {
-              const isMe = u.id === user?.id
-              const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null
+              const isMe  = u.id === user?.id
+              const rank  = denseRanks[i]
+              const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null
               return (
                 <Link
                   key={u.id}
@@ -122,7 +133,7 @@ export default async function LeaderboardPage({
                   <div className="w-8 text-center shrink-0">
                     {medal
                       ? <span className="text-lg">{medal}</span>
-                      : <span className={`text-sm font-bold ${isMe ? 'text-ivory/70' : 'text-slate-400'}`}>#{i + 1}</span>
+                      : <span className={`text-sm font-bold ${isMe ? 'text-ivory/70' : 'text-slate-400'}`}>#{rank}</span>
                     }
                   </div>
 
