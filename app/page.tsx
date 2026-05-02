@@ -10,9 +10,9 @@ export const revalidate = 0
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; specialty?: string; tab?: string }>
+  searchParams: Promise<{ q?: string; specialty?: string; tab?: string; max_min?: string }>
 }) {
-  const { q, specialty, tab } = await searchParams
+  const { q, specialty, tab, max_min } = await searchParams
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -45,7 +45,8 @@ export default async function HomePage({
     .order('submitter_points', { ascending: false })
     .limit(100)
   if (specialty) query = query.eq('specialty', specialty)
-  if (q) query = query.ilike('title', `%${q}%`)
+  if (q)        query = query.ilike('title', `%${q}%`)
+  if (max_min)  query = query.lte('estimated_minutes', parseInt(max_min))
   const { data: forms } = await query
   const feed = (forms ?? []) as FormFeedItem[]
 

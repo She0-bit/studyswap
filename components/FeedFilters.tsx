@@ -5,25 +5,34 @@ import { Search, X, SlidersHorizontal } from 'lucide-react'
 import { SPECIALTY_GROUPS } from '@/lib/types'
 import { useState, useEffect } from 'react'
 
+const DURATION_OPTIONS = [
+  { label: 'Any length',  value: '' },
+  { label: '≤ 5 min',    value: '5' },
+  { label: '≤ 10 min',   value: '10' },
+  { label: '≤ 15 min',   value: '15' },
+]
+
 export default function FeedFilters() {
   const router       = useRouter()
   const searchParams = useSearchParams()
 
-  const currentQ         = searchParams.get('q') ?? ''
+  const currentQ        = searchParams.get('q') ?? ''
   const currentSpecialty = searchParams.get('specialty') ?? ''
+  const currentMaxMin   = searchParams.get('max_min') ?? ''
 
-  // Local state for the search input only (so typing doesn't navigate on every keystroke)
   const [searchVal, setSearchVal] = useState(currentQ)
+  const [showAdvanced, setShowAdvanced] = useState(
+    // Keep panel open if an advanced filter is already active
+    !!currentMaxMin
+  )
 
-  // Keep search input in sync when URL changes (e.g. user clicks Clear)
-  useEffect(() => {
-    setSearchVal(currentQ)
-  }, [currentQ])
+  useEffect(() => { setSearchVal(currentQ) }, [currentQ])
 
-  function navigate(newQ: string, newSpec: string) {
+  function navigate(q: string, spec: string, maxMin: string) {
     const params = new URLSearchParams()
-    if (newQ.trim()) params.set('q', newQ.trim())
-    if (newSpec)     params.set('specialty', newSpec)
+    if (q.trim()) params.set('q', q.trim())
+    if (spec)     params.set('specialty', spec)
+    if (maxMin)   params.set('max_min', maxMin)
     router.push(`/?${params.toString()}`)
   }
 
@@ -32,38 +41,37 @@ export default function FeedFilters() {
     router.push('/')
   }
 
-  const hasFilters = !!(currentQ || currentSpecialty)
+  const hasFilters = !!(currentQ || currentSpecialty || currentMaxMin)
 
   return (
-    <div id="feed" className="mb-5 flex flex-col sm:flex-row gap-3">
-      {/* Search */}
-      <div className="flex-1 flex gap-2">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          <input
-            value={searchVal}
-            onChange={e => setSearchVal(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && navigate(searchVal, currentSpecialty)}
-            placeholder="Search by title…"
-            className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
-          />
+    <div id="feed" className="mb-5 space-y-2">
+      {/* Main filter row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <input
+              value={searchVal}
+              onChange={e => setSearchVal(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && navigate(searchVal, currentSpecialty, currentMaxMin)}
+              placeholder="Search by title…"
+              className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => navigate(searchVal, currentSpecialty, currentMaxMin)}
+            className="sm:hidden bg-charcoal text-white px-4 py-2.5 rounded-lg text-sm font-medium shrink-0"
+          >
+            Search
+          </button>
         </div>
-        {/* Search button — essential on mobile where Enter doesn't always submit */}
-        <button
-          type="button"
-          onClick={() => navigate(searchVal, currentSpecialty)}
-          className="sm:hidden bg-charcoal text-white px-4 py-2.5 rounded-lg text-sm font-medium shrink-0"
-        >
-          Search
-        </button>
-      </div>
 
-      {/* Specialty filter — value tied directly to URL so it always reflects current filter */}
-      <div className="flex items-center gap-2">
-        <SlidersHorizontal size={16} className="text-slate-400 shrink-0 hidden sm:block" />
+        {/* Specialty */}
         <select
           value={currentSpecialty}
-          onChange={e => navigate(searchVal, e.target.value)}
+          onChange={e => navigate(searchVal, e.target.value, currentMaxMin)}
           className="w-full sm:w-52 border border-ivory-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
         >
           <option value="">All specialties</option>
@@ -73,16 +81,58 @@ export default function FeedFilters() {
             </optgroup>
           ))}
         </select>
-      </div>
 
-      {hasFilters && (
+        {/* Advanced toggle */}
         <button
           type="button"
-          onClick={clearAll}
-          className="self-center flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 whitespace-nowrap transition-colors"
+          onClick={() => setShowAdvanced(v => !v)}
+          title="Advanced filters"
+          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-sm transition-colors shrink-0 ${
+            showAdvanced || currentMaxMin
+              ? 'bg-charcoal text-white border-charcoal'
+              : 'bg-white text-slate-500 border-ivory-border hover:border-charcoal/40 hover:text-slate-700'
+          }`}
         >
-          <X size={14} /> Clear
+          <SlidersHorizontal size={15} />
+          <span className="hidden sm:inline">Filters</span>
+          {currentMaxMin && <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">1</span>}
         </button>
+
+        {hasFilters && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="self-center flex items-center gap-1 text-sm text-slate-400 hover:text-slate-600 whitespace-nowrap transition-colors"
+          >
+            <X size={14} /> Clear
+          </button>
+        )}
+      </div>
+
+      {/* Advanced panel */}
+      {showAdvanced && (
+        <div className="bg-white border border-ivory-border rounded-xl px-5 py-4 flex flex-wrap gap-6">
+          {/* Duration */}
+          <div>
+            <p className="text-xs font-medium text-slate-600 mb-2">Max duration</p>
+            <div className="flex flex-wrap gap-2">
+              {DURATION_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => navigate(searchVal, currentSpecialty, opt.value)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    currentMaxMin === opt.value
+                      ? 'bg-charcoal text-white border-charcoal'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
