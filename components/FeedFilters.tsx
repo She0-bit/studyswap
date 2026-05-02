@@ -1,35 +1,38 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, X, SlidersHorizontal } from 'lucide-react'
 import { SPECIALTY_GROUPS } from '@/lib/types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-export default function FeedFilters({
-  q,
-  specialty,
-}: {
-  q?: string
-  specialty?: string
-}) {
-  const router = useRouter()
-  const [searchVal, setSearchVal]     = useState(q ?? '')
-  const [specialtyVal, setSpecialtyVal] = useState(specialty ?? '')
+export default function FeedFilters() {
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+
+  const currentQ         = searchParams.get('q') ?? ''
+  const currentSpecialty = searchParams.get('specialty') ?? ''
+
+  // Local state for the search input only (so typing doesn't navigate on every keystroke)
+  const [searchVal, setSearchVal] = useState(currentQ)
+
+  // Keep search input in sync when URL changes (e.g. user clicks Clear)
+  useEffect(() => {
+    setSearchVal(currentQ)
+  }, [currentQ])
 
   function navigate(newQ: string, newSpec: string) {
     const params = new URLSearchParams()
-    if (newQ.trim())  params.set('q', newQ.trim())
-    if (newSpec)      params.set('specialty', newSpec)
+    if (newQ.trim()) params.set('q', newQ.trim())
+    if (newSpec)     params.set('specialty', newSpec)
     router.push(`/?${params.toString()}`)
   }
 
   function clearAll() {
     setSearchVal('')
-    setSpecialtyVal('')
     router.push('/')
   }
 
-  const hasFilters = !!(q || specialty)
+  const hasFilters = !!(currentQ || currentSpecialty)
 
   return (
     <div id="feed" className="mb-5 flex flex-col sm:flex-row gap-3">
@@ -40,31 +43,27 @@ export default function FeedFilters({
           <input
             value={searchVal}
             onChange={e => setSearchVal(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && navigate(searchVal, specialtyVal)}
+            onKeyDown={e => e.key === 'Enter' && navigate(searchVal, currentSpecialty)}
             placeholder="Search by title…"
             className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
           />
         </div>
-        {/* Visible search button on mobile so the keyboard submit works */}
+        {/* Search button — essential on mobile where Enter doesn't always submit */}
         <button
           type="button"
-          onClick={() => navigate(searchVal, specialtyVal)}
+          onClick={() => navigate(searchVal, currentSpecialty)}
           className="sm:hidden bg-charcoal text-white px-4 py-2.5 rounded-lg text-sm font-medium shrink-0"
         >
           Search
         </button>
       </div>
 
-      {/* Specialty filter */}
+      {/* Specialty filter — value tied directly to URL so it always reflects current filter */}
       <div className="flex items-center gap-2">
         <SlidersHorizontal size={16} className="text-slate-400 shrink-0 hidden sm:block" />
         <select
-          value={specialtyVal}
-          onChange={e => {
-            const val = e.target.value
-            setSpecialtyVal(val)
-            navigate(searchVal, val)
-          }}
+          value={currentSpecialty}
+          onChange={e => navigate(searchVal, e.target.value)}
           className="w-full sm:w-52 border border-ivory-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
         >
           <option value="">All specialties</option>

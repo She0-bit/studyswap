@@ -129,8 +129,8 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* Search + filter (client component — handles mobile submit + auto specialty) */}
-      <FeedFilters q={q} specialty={specialty} />
+      {/* Search + filter — reads URL directly via useSearchParams, always in sync */}
+      <FeedFilters />
 
       {/* Tabs */}
       {user && (
