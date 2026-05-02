@@ -37,18 +37,15 @@ export default async function LeaderboardPage({
     fills:  Number(r.fill_count),
   }))
 
-  // ── All-time leaderboard ──────────────────────────────────────
-  const { data: allTimeProfiles } = await supabase
-    .from('profiles')
-    .select('id, name, username, points')
-    .not('username', 'is', null)
-    .gt('points', 0)
-    .order('points', { ascending: false })
-    .limit(50)
+  // ── All-time leaderboard (same formula as monthly for consistency) ─
+  const { data: allTimeData } = await supabase.rpc('get_alltime_leaderboard')
 
-  const allTimeRanking: RankedUser[] = (allTimeProfiles ?? []).map(p => ({
-    ...p,
-    fills: 0,
+  const allTimeRanking: RankedUser[] = (allTimeData ?? []).map((r: any) => ({
+    id:       r.user_id,
+    name:     r.name,
+    username: r.username,
+    points:   Number(r.total_points),
+    fills:    Number(r.fill_count),
   }))
 
   const ranking = activeTab === 'monthly' ? monthlyRanking : allTimeRanking
