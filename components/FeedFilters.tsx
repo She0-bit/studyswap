@@ -6,25 +6,22 @@ import { SPECIALTY_GROUPS } from '@/lib/types'
 import { useState, useEffect } from 'react'
 
 const DURATION_OPTIONS = [
-  { label: 'Any length',  value: '' },
-  { label: '≤ 5 min',    value: '5' },
-  { label: '≤ 10 min',   value: '10' },
-  { label: '≤ 15 min',   value: '15' },
+  { label: 'Any length', value: '' },
+  { label: '≤ 5 min',   value: '5' },
+  { label: '≤ 10 min',  value: '10' },
+  { label: '≤ 15 min',  value: '15' },
 ]
 
 export default function FeedFilters() {
   const router       = useRouter()
   const searchParams = useSearchParams()
 
-  const currentQ        = searchParams.get('q') ?? ''
+  const currentQ         = searchParams.get('q') ?? ''
   const currentSpecialty = searchParams.get('specialty') ?? ''
-  const currentMaxMin   = searchParams.get('max_min') ?? ''
+  const currentMaxMin    = searchParams.get('max_min') ?? ''
 
   const [searchVal, setSearchVal] = useState(currentQ)
-  const [showAdvanced, setShowAdvanced] = useState(
-    // Keep panel open if an advanced filter is already active
-    !!currentMaxMin
-  )
+  const [showAdvanced, setShowAdvanced] = useState(!!(currentSpecialty || currentMaxMin))
 
   useEffect(() => { setSearchVal(currentQ) }, [currentQ])
 
@@ -41,13 +38,14 @@ export default function FeedFilters() {
     router.push('/')
   }
 
-  const hasFilters = !!(currentQ || currentSpecialty || currentMaxMin)
+  const advancedCount = (currentSpecialty ? 1 : 0) + (currentMaxMin ? 1 : 0)
+  const hasFilters    = !!(currentQ || currentSpecialty || currentMaxMin)
 
   return (
     <div id="feed" className="mb-5 space-y-2">
-      {/* Main filter row */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
+      {/* Main row: search + filter toggle */}
+      <div className="flex gap-3">
+        {/* Search input */}
         <div className="flex-1 flex gap-2">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -59,6 +57,7 @@ export default function FeedFilters() {
               className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
             />
           </div>
+          {/* Search button visible on mobile */}
           <button
             type="button"
             onClick={() => navigate(searchVal, currentSpecialty, currentMaxMin)}
@@ -68,34 +67,24 @@ export default function FeedFilters() {
           </button>
         </div>
 
-        {/* Specialty */}
-        <select
-          value={currentSpecialty}
-          onChange={e => navigate(searchVal, e.target.value, currentMaxMin)}
-          className="w-full sm:w-52 border border-ivory-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
-        >
-          <option value="">All specialties</option>
-          {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
-            <optgroup key={group} label={group}>
-              {items.map(s => <option key={s} value={s}>{s}</option>)}
-            </optgroup>
-          ))}
-        </select>
-
-        {/* Advanced toggle */}
+        {/* Advanced filter toggle */}
         <button
           type="button"
           onClick={() => setShowAdvanced(v => !v)}
           title="Advanced filters"
           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-lg border text-sm transition-colors shrink-0 ${
-            showAdvanced || currentMaxMin
+            showAdvanced || advancedCount > 0
               ? 'bg-charcoal text-white border-charcoal'
               : 'bg-white text-slate-500 border-ivory-border hover:border-charcoal/40 hover:text-slate-700'
           }`}
         >
           <SlidersHorizontal size={15} />
           <span className="hidden sm:inline">Filters</span>
-          {currentMaxMin && <span className="text-xs bg-white/20 px-1.5 py-0.5 rounded-full">1</span>}
+          {advancedCount > 0 && (
+            <span className="text-xs bg-white/25 px-1.5 py-0.5 rounded-full font-medium">
+              {advancedCount}
+            </span>
+          )}
         </button>
 
         {hasFilters && (
@@ -111,7 +100,25 @@ export default function FeedFilters() {
 
       {/* Advanced panel */}
       {showAdvanced && (
-        <div className="bg-white border border-ivory-border rounded-xl px-5 py-4 flex flex-wrap gap-6">
+        <div className="bg-white border border-ivory-border rounded-xl px-5 py-4 flex flex-col sm:flex-row gap-6">
+
+          {/* Specialty */}
+          <div className="flex-1">
+            <p className="text-xs font-medium text-slate-600 mb-2">Field / Specialty</p>
+            <select
+              value={currentSpecialty}
+              onChange={e => navigate(searchVal, e.target.value, currentMaxMin)}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal"
+            >
+              <option value="">All specialties</option>
+              {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
+                <optgroup key={group} label={group}>
+                  {items.map(s => <option key={s} value={s}>{s}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
           {/* Duration */}
           <div>
             <p className="text-xs font-medium text-slate-600 mb-2">Max duration</p>
@@ -132,6 +139,7 @@ export default function FeedFilters() {
               ))}
             </div>
           </div>
+
         </div>
       )}
     </div>
