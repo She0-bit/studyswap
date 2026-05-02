@@ -2,7 +2,9 @@ import { createClient } from '@/lib/supabase-server'
 import { notFound } from 'next/navigation'
 import FillButton from './FillButton'
 import ShareButton from '@/components/ShareButton'
-import { Clock, Users, Trophy, BookOpen, ArrowLeft, ExternalLink, UserCheck, MapPin } from 'lucide-react'
+import ReportButton from './ReportButton'
+import DeactivateButton from '@/app/profile/DeactivateButton'
+import { Clock, Users, Trophy, BookOpen, ArrowLeft, ExternalLink, UserCheck, MapPin, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { roleLabel, type FormFeedItem } from '@/lib/types'
 
@@ -31,12 +33,19 @@ export default async function FormDetailPage({
 
   let alreadyFilled = false
   let isOwner = false
+  let isActive = true
   if (user) {
     isOwner = user.id === f.user_id
     const { data: fill } = await supabase
       .from('fills').select('id')
       .eq('user_id', user.id).eq('form_id', id).maybeSingle()
     alreadyFilled = !!fill
+
+    if (isOwner) {
+      const { data: formRow } = await supabase
+        .from('forms').select('is_active').eq('id', id).single()
+      isActive = formRow?.is_active !== false
+    }
   }
 
   const pointsReward = 10 + f.estimated_minutes * 2
@@ -143,8 +152,24 @@ export default async function FormDetailPage({
             referrerId={ref ?? null}
           />
 
+          {/* Owner controls */}
+          {isOwner && (
+            <div className="flex gap-2 pt-1">
+              <Link
+                href={`/forms/${f.id}/edit`}
+                className="flex-1 flex items-center justify-center gap-1.5 text-sm bg-charcoal text-white py-2.5 rounded-xl hover:bg-charcoal-deep transition-colors font-medium"
+              >
+                <Pencil size={14} /> Edit survey
+              </Link>
+              <DeactivateButton formId={f.id} isActive={isActive} />
+            </div>
+          )}
+
           {/* Share */}
           {!isOwner && <ShareButton formId={f.id} />}
+
+          {/* Report */}
+          {!isOwner && user && <ReportButton formId={f.id} />}
 
           {/* Direct link */}
           <a href={f.link} target="_blank" rel="noopener noreferrer"

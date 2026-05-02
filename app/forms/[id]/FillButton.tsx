@@ -22,33 +22,69 @@ export default function FillButton({
   formId, formLink, estimatedMinutes, pointsReward,
   isLoggedIn, isOwner, alreadyFilled, referrerId,
 }: Props) {
-  const [phase, setPhase]           = useState<Phase>(alreadyFilled ? 'done' : 'idle')
+  const [phase, setPhase]             = useState<Phase>(alreadyFilled ? 'done' : 'idle')
   const [secondsLeft, setSecondsLeft] = useState(0)
-  const [error, setError]           = useState('')
+  const [error, setError]             = useState('')
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const router   = useRouter()
   const supabase = createClient()
 
   // Wait = estimated minutes in seconds, capped between 30s and 300s
   const waitSeconds = Math.min(Math.max(estimatedMinutes * 60, 30), 300)
+  const STORAGE_KEY = `fill_timer_${formId}`
+
+  // On mount: check localStorage for a timer that started in another tab
+  useEffect(() => {
+    if (alreadyFilled) return
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (!raw) return
+      const { startTime, wait } = JSON.parse(raw) as { startTime: number; wait: number }
+      const elapsed   = Math.floor((Date.now() - startTime) / 1000)
+      const remaining = wait - elapsed
+      if (remaining > 0) {
+        setPhase('waiting')
+        setSecondsLeft(remaining)
+        startCountdown(remaining)
+      } else {
+        localStorage.removeItem(STORAGE_KEY)
+        setPhase('ready')
+      }
+    } catch {
+      localStorage.removeItem(STORAGE_KEY)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
+
+  function startCountdown(fromSeconds: number) {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setSecondsLeft(s => {
+        if (s <= 1) {
+          clearInterval(timerRef.current!)
+          localStorage.removeItem(STORAGE_KEY)
+          setPhase('ready')
+          return 0
+        }
+        return s - 1
+      })
+    }, 1000)
+    setSecondsLeft(fromSeconds)
+  }
 
   function openForm() {
     window.open(formLink, '_blank', 'noopener,noreferrer')
     setPhase('waiting')
-    setSecondsLeft(waitSeconds)
-    timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) { clearInterval(timerRef.current!); setPhase('ready'); return 0 }
-        return s - 1
-      })
-    }, 1000)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ startTime: Date.now(), wait: waitSeconds }))
+    startCountdown(waitSeconds)
   }
 
   async function claimPoints() {
     setPhase('claiming')
     setError('')
+    localStorage.removeItem(STORAGE_KEY)
     const { error: rpcError } = await supabase.rpc('fill_form', {
       form_id_input:     formId,
       referrer_id_input: referrerId ?? null,
@@ -107,7 +143,9 @@ export default function FillButton({
             {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:
             {(secondsLeft % 60).toString().padStart(2, '0')}
           </div>
-          <p className="text-xs text-amber-500">Claim your points when the timer reaches 0</p>
+          <p className="text-xs text-amber-500">
+            Timer keeps running even if you switch tabs — come back when it's done
+          </p>
         </div>
       )}
 

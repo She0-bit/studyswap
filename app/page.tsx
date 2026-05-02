@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase-server'
 import FormCard from '@/components/FormCard'
+import FeedFilters from '@/components/FeedFilters'
 import Link from 'next/link'
-import { Search, Trophy, Users, Zap, Sparkles, Rss } from 'lucide-react'
+import { Users, Sparkles, Rss } from 'lucide-react'
 import { matchesCriteria, SPECIALTY_GROUPS, type FormFeedItem, type Profile } from '@/lib/types'
 
 export const revalidate = 0
@@ -48,27 +49,32 @@ export default async function HomePage({
   const { data: forms } = await query
   const feed = (forms ?? []) as FormFeedItem[]
 
-  // Fills by current user
+  // Fills by current user — used to hide already-filled surveys
   let myFillIds = new Set<string>()
   if (user) {
     const { data: fills } = await supabase.from('fills').select('form_id').eq('user_id', user.id)
     fills?.forEach(f => myFillIds.add(f.form_id))
   }
 
-  // ── Pin featured surveys to top (owner's surveys always rank first) ──
+  // ── Pin featured surveys to top ──────────────────────────────
   const FEATURED_USERNAME = 'sheikah'
   const featuredForms = feed.filter(f => f.submitter_username?.toLowerCase() === FEATURED_USERNAME)
   const otherForms    = feed.filter(f => f.submitter_username?.toLowerCase() !== FEATURED_USERNAME)
   const sortedFeed    = [...featuredForms, ...otherForms]
 
+  // Hide surveys the user already filled or owns
+  const visibleFeed = user
+    ? sortedFeed.filter(f => !myFillIds.has(f.id) && f.user_id !== user.id)
+    : sortedFeed
+
+  const visibleFollowingFeed = user
+    ? followingFeed.filter(f => !myFillIds.has(f.id) && f.user_id !== user.id)
+    : followingFeed
+
   // ── For You matching ─────────────────────────────────────────
   const hasProfileForMatching = profile && (profile.role || profile.age || profile.sex || profile.country)
   const forYou = profile && !q && !specialty && tab !== 'following'
-    ? sortedFeed.filter(f =>
-        !myFillIds.has(f.id) &&
-        f.user_id !== user?.id &&
-        matchesCriteria(f.sample_criteria, profile!)
-      ).slice(0, 5)
+    ? visibleFeed.filter(f => matchesCriteria(f.sample_criteria, profile!)).slice(0, 5)
     : []
 
   const activeTab = tab === 'following' && user ? 'following' : 'all'
@@ -96,23 +102,6 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* Stats */}
-      {!q && !specialty && (
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {[
-            { icon: <Users size={18} className="text-charcoal" />, label: 'Active surveys', value: feed.length },
-            { icon: <Trophy size={18} className="text-amber-500" />, label: 'Points in circulation', value: feed.reduce((a, f) => a + f.submitter_points, 0) },
-            { icon: <Zap size={18} className="text-emerald-500" />, label: 'Total responses', value: feed.reduce((a, f) => a + f.fill_count, 0) },
-          ].map(stat => (
-            <div key={stat.label} className="bg-white border border-ivory-border rounded-xl p-4 text-center">
-              <div className="flex justify-center mb-1">{stat.icon}</div>
-              <div className="text-xl font-bold text-slate-800">{stat.value}</div>
-              <div className="text-xs text-slate-400">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* For You */}
       {user && !q && !specialty && activeTab === 'all' && (
         <div className="mb-8">
@@ -133,37 +122,15 @@ export default async function HomePage({
           ) : (
             <div className="space-y-3">
               {forYou.map(form => (
-                <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} filledByMe={false} highlighted />
+                <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} highlighted />
               ))}
             </div>
           )}
         </div>
       )}
 
-      {/* Search + filter */}
-      <div id="feed" className="mb-5 flex flex-col sm:flex-row gap-3">
-        <form method="GET" className="flex-1 relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input name="q" defaultValue={q} placeholder="Search by title…"
-            className="w-full pl-9 pr-4 py-2.5 border border-ivory-border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal" />
-          {specialty && <input type="hidden" name="specialty" value={specialty} />}
-        </form>
-        <form method="GET">
-          <select name="specialty" defaultValue={specialty ?? ''}
-            className="w-full sm:w-56 border border-ivory-border rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-charcoal">
-            <option value="">All specialties</option>
-            {Object.entries(SPECIALTY_GROUPS).map(([group, items]) => (
-              <optgroup key={group} label={group}>
-                {items.map(s => <option key={s} value={s}>{s}</option>)}
-              </optgroup>
-            ))}
-          </select>
-          {q && <input type="hidden" name="q" value={q} />}
-        </form>
-        {(q || specialty) && (
-          <Link href="/" className="self-center text-sm text-slate-400 hover:text-slate-600 whitespace-nowrap">Clear filters</Link>
-        )}
-      </div>
+      {/* Search + filter (client component — handles mobile submit + auto specialty) */}
+      <FeedFilters q={q} specialty={specialty} />
 
       {/* Tabs */}
       {user && (
@@ -189,18 +156,18 @@ export default async function HomePage({
             <p className="font-medium mb-1">You're not following anyone yet</p>
             <p className="text-sm">Browse surveys, click a researcher's name, and follow them to see their work here.</p>
           </div>
-        ) : followingFeed.length === 0 ? (
+        ) : visibleFollowingFeed.length === 0 ? (
           <div className="text-center py-16 text-slate-400 text-sm">
-            The people you follow haven't posted any surveys yet.
+            No new surveys from the people you follow.
           </div>
         ) : (
           <div className="space-y-3">
-            {followingFeed.map((form, i) => (
-              <FormCard key={form.id} form={form} rank={i + 1} filledByMe={myFillIds.has(form.id)} />
+            {visibleFollowingFeed.map((form, i) => (
+              <FormCard key={form.id} form={form} rank={i + 1} />
             ))}
           </div>
         )
-      ) : sortedFeed.length === 0 ? (
+      ) : visibleFeed.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
           <p className="text-lg mb-2">No surveys found</p>
           <p className="text-sm">
@@ -212,8 +179,8 @@ export default async function HomePage({
         </div>
       ) : (
         <div className="space-y-3">
-          {sortedFeed.map((form, i) => (
-            <FormCard key={form.id} form={form} rank={i + 1} filledByMe={myFillIds.has(form.id)} />
+          {visibleFeed.map((form, i) => (
+            <FormCard key={form.id} form={form} rank={i + 1} />
           ))}
         </div>
       )}

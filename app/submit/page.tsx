@@ -47,11 +47,34 @@ export default function SubmitPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    try { new URL(link) } catch { setError('Please enter a valid URL (include https://)'); return }
+
+    // Validate link
+    let parsed: URL
+    try { parsed = new URL(link) } catch { setError('Please enter a valid URL (include https://)'); return }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      setError('Link must start with https://'); return
+    }
+
+    // Specialty is mandatory
+    if (!specialty) { setError('Please select a field / specialty'); return }
+
     setLoading(true)
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/auth'); return }
+
+    // Spam limit: max 3 submissions per 24h
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { count } = await supabase
+      .from('forms')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', since)
+    if ((count ?? 0) >= 3) {
+      setError('You can submit up to 3 surveys per day. Try again tomorrow.')
+      setLoading(false)
+      return
+    }
 
     const countries = [...selectedCountries]
     if (customCountry.trim()) countries.push(...customCountry.split(',').map(s => s.trim()).filter(Boolean))
@@ -143,7 +166,7 @@ export default function SubmitPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5 flex items-center gap-1.5">
-                <BookOpen size={14} /> Field / Specialty
+                <BookOpen size={14} /> Field / Specialty *
               </label>
               <select value={specialty} onChange={e => setSpecialty(e.target.value)}
                 className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-charcoal bg-white">

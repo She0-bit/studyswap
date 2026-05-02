@@ -26,6 +26,27 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
   const [saved, setSaved]         = useState(false)
   const [loading, setLoading]     = useState(false)
 
+  // Track initial values so we only enable Save when something changed
+  const initial = useRef({
+    name:        profile.name ?? '',
+    username:    profile.username ?? '',
+    institution: profile.institution ?? '',
+    specialty:   profile.specialty ?? '',
+    role:        profile.role ?? '',
+    age:         profile.age?.toString() ?? '',
+    sex:         profile.sex ?? '',
+    country:     profile.country ?? '',
+  })
+  const isDirty =
+    name        !== initial.current.name        ||
+    username    !== initial.current.username    ||
+    institution !== initial.current.institution ||
+    specialty   !== initial.current.specialty   ||
+    role        !== initial.current.role        ||
+    age         !== initial.current.age         ||
+    sex         !== initial.current.sex         ||
+    country     !== initial.current.country
+
   const [usernameStatus, setUsernameStatus] = useState<'idle'|'checking'|'available'|'taken'|'invalid'|'same'>('idle')
   const usernameTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -62,6 +83,8 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
     }).eq('id', profile.id)
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
+    // Update initial ref so button disables again after save
+    initial.current = { name: name.trim(), username, institution, specialty, role, age, sex, country }
     router.refresh()
     setLoading(false)
   }
@@ -170,8 +193,8 @@ export default function UpdateProfileForm({ profile }: { profile: Profile }) {
       )}
 
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={loading}
-          className="flex items-center gap-2 bg-charcoal text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-60">
+        <button type="submit" disabled={loading || !isDirty}
+          className="flex items-center gap-2 bg-charcoal text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           <Save size={14} /> {loading ? 'Saving…' : 'Save profile'}
         </button>
         {saved && <span className="text-sm text-emerald-600">✓ Saved!</span>}
