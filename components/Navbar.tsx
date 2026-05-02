@@ -46,7 +46,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="n=1" className="h-14 w-auto" />
-          <span className="text-ivory font-bold text-xl tracking-tight">n=1</span>
+          <span className="text-ivory text-3xl" style={{ fontFamily: 'var(--font-fredoka)' }}>n=1</span>
         </Link>
 
         {/* Desktop nav */}
