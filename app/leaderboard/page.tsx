@@ -23,50 +23,19 @@ export default async function LeaderboardPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // ── Monthly leaderboard ───────────────────────────────────────
+  // ── Monthly leaderboard (via SECURITY DEFINER RPC to bypass RLS) ─
   const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' })
 
-  const { data: monthlyFills } = await supabase
-    .from('fills')
-    .select('user_id, form_id')
-    .gte('created_at', startOfMonth)
+  const { data: monthlyData } = await supabase.rpc('get_monthly_leaderboard')
 
-  let monthlyRanking: RankedUser[] = []
-
-  if (monthlyFills && monthlyFills.length > 0) {
-    const formIds = [...new Set(monthlyFills.map(f => f.form_id))]
-    const { data: formDetails } = await supabase
-      .from('forms')
-      .select('id, estimated_minutes')
-      .in('id', formIds)
-
-    const formPtsMap: Record<string, number> = {}
-    formDetails?.forEach(f => { formPtsMap[f.id] = 10 + f.estimated_minutes * 2 })
-
-    const agg: Record<string, { points: number; fills: number }> = {}
-    monthlyFills.forEach(fill => {
-      if (!agg[fill.user_id]) agg[fill.user_id] = { points: 0, fills: 0 }
-      agg[fill.user_id].points += formPtsMap[fill.form_id] ?? 0
-      agg[fill.user_id].fills  += 1
-    })
-
-    const userIds = Object.keys(agg)
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, name, username')
-      .in('id', userIds)
-
-    monthlyRanking = (profiles ?? [])
-      .map(p => ({
-        ...p,
-        points: agg[p.id]?.points ?? 0,
-        fills:  agg[p.id]?.fills  ?? 0,
-      }))
-      .sort((a, b) => b.points - a.points)
-      .slice(0, 50)
-  }
+  const monthlyRanking: RankedUser[] = (monthlyData ?? []).map((r: any) => ({
+    id:     r.user_id,
+    name:   r.name,
+    username: r.username,
+    points: Number(r.monthly_points),
+    fills:  Number(r.fill_count),
+  }))
 
   // ── All-time leaderboard ──────────────────────────────────────
   const { data: allTimeProfiles } = await supabase
