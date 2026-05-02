@@ -97,23 +97,60 @@ export const SPECIALTY_GROUPS: Record<string, string[]> = {
 export const SPECIALTIES = Object.values(SPECIALTY_GROUPS).flat()
 
 // ── Target population roles ───────────────────────────────────
-export const ROLES: { value: string; label: string }[] = [
-  { value: 'medical_student',   label: 'Medical Student' },
-  { value: 'intern',            label: 'Intern / House Officer' },
-  { value: 'resident',          label: 'Resident' },
-  { value: 'doctor',            label: 'Doctor / Physician' },
-  { value: 'nurse',             label: 'Nurse' },
-  { value: 'pharmacist',        label: 'Pharmacist' },
-  { value: 'dentist',           label: 'Dentist' },
-  { value: 'university_student',label: 'University Student (General)' },
-  { value: 'high_school',       label: 'High School Student' },
-  { value: 'parent',            label: 'Parent' },
-  { value: 'healthcare_worker', label: 'Healthcare Worker (General)' },
-  { value: 'patient',           label: 'Patient' },
-  { value: 'employee',          label: 'Employee / Working Adult' },
-  { value: 'general_public',    label: 'General Public' },
-  { value: 'other',             label: 'Other' },
-]
+export const ROLE_GROUPS: Record<string, { value: string; label: string }[]> = {
+  'Students': [
+    { value: 'high_school',        label: 'High School Student' },
+    { value: 'undergrad',          label: 'Undergraduate Student' },
+    { value: 'grad_student',       label: 'Graduate Student (MSc/MBA)' },
+    { value: 'phd_student',        label: 'PhD Student / Doctoral Researcher' },
+  ],
+  'Academia & Research': [
+    { value: 'professor',          label: 'Professor / Lecturer' },
+    { value: 'postdoc',            label: 'Postdoctoral Researcher' },
+    { value: 'researcher',         label: 'Research Assistant / Associate' },
+  ],
+  'Healthcare': [
+    { value: 'medical_student',    label: 'Medical Student' },
+    { value: 'intern',             label: 'Intern / House Officer' },
+    { value: 'resident',           label: 'Resident / Registrar' },
+    { value: 'doctor',             label: 'Doctor / Physician' },
+    { value: 'nurse',              label: 'Nurse' },
+    { value: 'pharmacist',         label: 'Pharmacist' },
+    { value: 'dentist',            label: 'Dentist' },
+    { value: 'allied_health',      label: 'Allied Health Professional' },
+    { value: 'patient',            label: 'Patient / Care Recipient' },
+  ],
+  'Technology & Engineering': [
+    { value: 'software_dev',       label: 'Software Developer / Engineer' },
+    { value: 'data_scientist',     label: 'Data Scientist / Analyst' },
+    { value: 'ux_designer',        label: 'UX / Product Designer' },
+    { value: 'product_manager',    label: 'Product Manager' },
+    { value: 'it_professional',    label: 'IT / Systems Professional' },
+    { value: 'engineer',           label: 'Engineer (Civil / Mechanical / Electrical)' },
+  ],
+  'Business & Finance': [
+    { value: 'business_prof',      label: 'Business Professional' },
+    { value: 'entrepreneur',       label: 'Entrepreneur / Founder' },
+    { value: 'finance_prof',       label: 'Finance / Accounting Professional' },
+    { value: 'marketer',           label: 'Marketing / Sales Professional' },
+  ],
+  'Education & Social': [
+    { value: 'teacher',            label: 'Teacher / Educator' },
+    { value: 'social_worker',      label: 'Social Worker / Counsellor' },
+    { value: 'lawyer',             label: 'Lawyer / Legal Professional' },
+    { value: 'journalist',         label: 'Journalist / Media Professional' },
+  ],
+  'General': [
+    { value: 'employee',           label: 'Employee (any sector)' },
+    { value: 'freelancer',         label: 'Freelancer / Self-employed' },
+    { value: 'parent',             label: 'Parent / Caregiver' },
+    { value: 'general_public',     label: 'General Public' },
+    { value: 'other',              label: 'Other' },
+  ],
+}
+
+// Flat list kept for backward-compat (roleLabel, profile select)
+export const ROLES = Object.values(ROLE_GROUPS).flat()
 
 export function roleLabel(value: string) {
   return ROLES.find(r => r.value === value)?.label ?? value

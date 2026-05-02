@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { SPECIALTY_GROUPS, ROLES } from '@/lib/types'
+import { SPECIALTY_GROUPS, ROLE_GROUPS } from '@/lib/types'
 import { Link2, Clock, BookOpen, ChevronRight, Users } from 'lucide-react'
 
 const COUNTRIES = [
@@ -201,19 +201,26 @@ export default function SubmitPage() {
 
             {/* Roles */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                Who should fill this? <span className="text-slate-400 font-normal">(select all that apply — leave empty for anyone)</span>
+              <label className="block text-sm font-medium text-slate-700 mb-3">
+                Who should fill this? <span className="text-slate-400 font-normal">(leave empty for anyone)</span>
               </label>
-              <div className="flex flex-wrap gap-2">
-                {ROLES.map(r => (
-                  <button key={r.value} type="button" onClick={() => toggleRole(r.value)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                      selectedRoles.includes(r.value)
-                        ? 'bg-charcoal text-white border-charcoal'
-                        : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
-                    }`}>
-                    {r.label}
-                  </button>
+              <div className="space-y-3">
+                {Object.entries(ROLE_GROUPS).map(([group, roles]) => (
+                  <div key={group}>
+                    <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">{group}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {roles.map(r => (
+                        <button key={r.value} type="button" onClick={() => toggleRole(r.value)}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                            selectedRoles.includes(r.value)
+                              ? 'bg-charcoal text-white border-charcoal'
+                              : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
+                          }`}>
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

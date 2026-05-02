@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { ExternalLink, CheckCircle, Loader2 } from 'lucide-react'
+import { ExternalLink, CheckCircle, Loader2, AlertCircle } from 'lucide-react'
 
 type Props = {
   formId:           string
@@ -16,84 +16,66 @@ type Props = {
   referrerId:       string | null
 }
 
-type Phase = 'idle' | 'waiting' | 'ready' | 'claiming' | 'done'
+type Phase = 'idle' | 'open' | 'claiming' | 'done' | 'toosoon'
+
+// Minimum time (seconds) before we accept a completion
+const MIN_SECONDS = 60
 
 export default function FillButton({
   formId, formLink, estimatedMinutes, pointsReward,
   isLoggedIn, isOwner, alreadyFilled, referrerId,
 }: Props) {
-  const [phase, setPhase]             = useState<Phase>(alreadyFilled ? 'done' : 'idle')
-  const [secondsLeft, setSecondsLeft] = useState(0)
-  const [error, setError]             = useState('')
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const router   = useRouter()
-  const supabase = createClient()
+  const [phase, setPhase]   = useState<Phase>(alreadyFilled ? 'done' : 'idle')
+  const [error, setError]   = useState('')
+  const startTimeRef        = useRef<number | null>(null)
+  const STORAGE_KEY         = `fill_start_${formId}`
+  const router              = useRouter()
+  const supabase            = createClient()
 
-  // Wait = estimated minutes in seconds, capped between 30s and 300s
-  const waitSeconds = Math.min(Math.max(estimatedMinutes * 60, 30), 300)
-  const STORAGE_KEY = `fill_timer_${formId}`
-
-  // On mount: check localStorage for a timer that started in another tab
+  // On mount: restore startTime from localStorage if user already opened the survey
   useEffect(() => {
     if (alreadyFilled) return
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
-      if (!raw) return
-      const { startTime, wait } = JSON.parse(raw) as { startTime: number; wait: number }
-      const elapsed   = Math.floor((Date.now() - startTime) / 1000)
-      const remaining = wait - elapsed
-      if (remaining > 0) {
-        setPhase('waiting')
-        setSecondsLeft(remaining)
-        startCountdown(remaining)
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-        setPhase('ready')
+      if (raw) {
+        startTimeRef.current = parseInt(raw, 10)
+        setPhase('open')
       }
-    } catch {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
-
-  function startCountdown(fromSeconds: number) {
-    if (timerRef.current) clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setSecondsLeft(s => {
-        if (s <= 1) {
-          clearInterval(timerRef.current!)
-          localStorage.removeItem(STORAGE_KEY)
-          setPhase('ready')
-          return 0
-        }
-        return s - 1
-      })
-    }, 1000)
-    setSecondsLeft(fromSeconds)
-  }
-
   function openForm() {
+    const now = Date.now()
+    startTimeRef.current = now
+    try { localStorage.setItem(STORAGE_KEY, String(now)) } catch { /* ignore */ }
     window.open(formLink, '_blank', 'noopener,noreferrer')
-    setPhase('waiting')
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ startTime: Date.now(), wait: waitSeconds }))
-    startCountdown(waitSeconds)
+    setPhase('open')
   }
 
-  async function claimPoints() {
+  async function handleFinished() {
+    const elapsed = startTimeRef.current
+      ? Math.floor((Date.now() - startTimeRef.current) / 1000)
+      : 0
+
+    if (elapsed < MIN_SECONDS) {
+      setPhase('toosoon')
+      return
+    }
+
     setPhase('claiming')
     setError('')
-    localStorage.removeItem(STORAGE_KEY)
+    try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
+
     const { error: rpcError } = await supabase.rpc('fill_form', {
       form_id_input:     formId,
       referrer_id_input: referrerId ?? null,
     })
-    if (rpcError) { setError(rpcError.message); setPhase('ready'); return }
+    if (rpcError) { setError(rpcError.message); setPhase('open'); return }
     setPhase('done')
     router.refresh()
   }
 
+  // ── Not logged in ────────────────────────────────────────────
   if (!isLoggedIn) {
     return (
       <a href="/auth"
@@ -103,6 +85,7 @@ export default function FillButton({
     )
   }
 
+  // ── Owner ────────────────────────────────────────────────────
   if (isOwner) {
     return (
       <div className="bg-ivory border border-ivory-border rounded-xl p-4 text-center text-sm text-slate-500">
@@ -111,6 +94,7 @@ export default function FillButton({
     )
   }
 
+  // ── Already done ─────────────────────────────────────────────
   if (phase === 'done') {
     return (
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
@@ -121,53 +105,69 @@ export default function FillButton({
     )
   }
 
+  // ── Idle ─────────────────────────────────────────────────────
+  if (phase === 'idle') {
+    return (
+      <button onClick={openForm}
+        className="w-full flex items-center justify-center gap-2 bg-charcoal text-white py-3 rounded-xl font-medium text-sm hover:bg-charcoal-deep transition-colors">
+        <ExternalLink size={16} />
+        Open & fill this survey (earn +{pointsReward} pts)
+      </button>
+    )
+  }
+
+  // ── Too soon ─────────────────────────────────────────────────
+  if (phase === 'toosoon') {
+    return (
+      <div className="space-y-3">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-5 text-center">
+          <AlertCircle className="text-red-400 mx-auto mb-2" size={26} />
+          <p className="font-semibold text-red-700">That was too fast</p>
+          <p className="text-sm text-red-600 mt-1">
+            You need at least 1 minute to fill this survey.<br />
+            Please go back and actually complete it.
+          </p>
+        </div>
+        <button onClick={() => { window.open(formLink, '_blank', 'noopener,noreferrer'); setPhase('open') }}
+          className="w-full flex items-center justify-center gap-2 bg-charcoal text-white py-3 rounded-xl font-medium text-sm hover:bg-charcoal-deep transition-colors">
+          <ExternalLink size={16} /> Open survey again
+        </button>
+      </div>
+    )
+  }
+
+  // ── Survey is open / claiming ────────────────────────────────
   return (
     <div className="space-y-3">
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{error}</div>
       )}
 
-      {phase === 'idle' && (
-        <button onClick={openForm}
-          className="w-full flex items-center justify-center gap-2 bg-charcoal text-white py-3 rounded-xl font-medium text-sm hover:bg-charcoal-deep transition-colors">
-          <ExternalLink size={16} />
-          Open & fill this survey (earn +{pointsReward} pts)
-        </button>
-      )}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 text-center">
+        <p className="text-sm font-medium text-amber-800">Survey opened in a new tab</p>
+        <p className="text-xs text-amber-600 mt-1">
+          Complete it, then come back here and click the button below.
+        </p>
+      </div>
 
-      {phase === 'waiting' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center space-y-3">
-          <Loader2 className="text-amber-500 mx-auto animate-spin" size={24} />
-          <p className="text-sm font-medium text-amber-700">Fill out the survey, then come back here</p>
-          <div className="text-3xl font-bold text-amber-600 tabular-nums">
-            {Math.floor(secondsLeft / 60).toString().padStart(2, '0')}:
-            {(secondsLeft % 60).toString().padStart(2, '0')}
-          </div>
-          <p className="text-xs text-amber-500">
-            Timer keeps running even if you switch tabs — come back when it's done
-          </p>
-        </div>
-      )}
-
-      {phase === 'ready' && (
-        <button onClick={claimPoints}
+      {phase === 'open' && (
+        <button onClick={handleFinished}
           className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white py-3 rounded-xl font-medium text-sm hover:bg-emerald-700 transition-colors">
           <CheckCircle size={16} />
-          I filled it — claim +{pointsReward} points!
+          I've finished filling it — claim +{pointsReward} pts
         </button>
       )}
 
       {phase === 'claiming' && (
-        <button disabled className="w-full flex items-center justify-center gap-2 bg-emerald-600/70 text-white py-3 rounded-xl font-medium text-sm">
+        <button disabled
+          className="w-full flex items-center justify-center gap-2 bg-emerald-600/70 text-white py-3 rounded-xl font-medium text-sm cursor-not-allowed">
           <Loader2 size={16} className="animate-spin" /> Awarding points…
         </button>
       )}
 
-      {(phase === 'waiting' || phase === 'ready') && (
-        <p className="text-xs text-slate-400 text-center">
-          The survey opened in a new tab. Complete it there, then come back and claim your points.
-        </p>
-      )}
+      <p className="text-xs text-slate-400 text-center">
+        Claiming without filling the survey will result in no points being awarded.
+      </p>
     </div>
   )
 }

@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
-import { SPECIALTY_GROUPS, ROLES } from '@/lib/types'
-import { Link2, Clock, BookOpen, Save, Trash2, Users, ArrowLeft } from 'lucide-react'
+import { SPECIALTY_GROUPS, ROLE_GROUPS } from '@/lib/types'
+import { Link2, Clock, BookOpen, Save, Users, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 const COUNTRIES = [
@@ -37,8 +37,35 @@ export default function EditFormClient({ form }: { form: any }) {
   const [error, setError]     = useState('')
   const [saving, setSaving]   = useState(false)
   const [saved, setSaved]     = useState(false)
-  const router = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
+
+  // Snapshot of initial values to detect changes
+  const initial = useRef({
+    title, description, link, specialty, institution,
+    estimatedMinutes, isActive,
+    roles:     JSON.stringify([...c.roles ?? []].sort()),
+    sex:       c.sex ?? 'any',
+    minAge:    c.min_age?.toString() ?? '',
+    maxAge:    c.max_age?.toString() ?? '',
+    countries: JSON.stringify([...c.countries ?? []].sort()),
+    other:     c.other ?? '',
+  })
+
+  const isDirty =
+    title             !== initial.current.title             ||
+    description       !== initial.current.description       ||
+    link              !== initial.current.link              ||
+    specialty         !== initial.current.specialty         ||
+    institution       !== initial.current.institution       ||
+    estimatedMinutes  !== initial.current.estimatedMinutes  ||
+    isActive          !== initial.current.isActive          ||
+    JSON.stringify([...selectedRoles].sort())     !== initial.current.roles    ||
+    sex               !== initial.current.sex               ||
+    minAge            !== initial.current.minAge            ||
+    maxAge            !== initial.current.maxAge            ||
+    JSON.stringify([...selectedCountries].sort()) !== initial.current.countries ||
+    otherCriteria     !== initial.current.other
 
   function toggleRole(val: string) {
     setSelectedRoles(r => r.includes(val) ? r.filter(x => x !== val) : [...r, val])
@@ -79,6 +106,16 @@ export default function EditFormClient({ form }: { form: any }) {
 
     if (updateError) { setError(updateError.message); setSaving(false); return }
 
+    // Reset snapshot so button disables again
+    initial.current = {
+      title, description, link, specialty, institution,
+      estimatedMinutes, isActive,
+      roles:     JSON.stringify([...selectedRoles].sort()),
+      sex,
+      minAge, maxAge,
+      countries: JSON.stringify([...selectedCountries].sort()),
+      other:     otherCriteria.trim(),
+    }
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
     setSaving(false)
@@ -198,17 +235,24 @@ export default function EditFormClient({ form }: { form: any }) {
 
           {/* Roles */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Who should fill this?</label>
-            <div className="flex flex-wrap gap-2">
-              {ROLES.map(r => (
-                <button key={r.value} type="button" onClick={() => toggleRole(r.value)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                    selectedRoles.includes(r.value)
-                      ? 'bg-charcoal text-white border-charcoal'
-                      : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
-                  }`}>
-                  {r.label}
-                </button>
+            <label className="block text-sm font-medium text-slate-700 mb-3">Who should fill this?</label>
+            <div className="space-y-3">
+              {Object.entries(ROLE_GROUPS).map(([group, roles]) => (
+                <div key={group}>
+                  <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1.5">{group}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {roles.map(r => (
+                      <button key={r.value} type="button" onClick={() => toggleRole(r.value)}
+                        className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                          selectedRoles.includes(r.value)
+                            ? 'bg-charcoal text-white border-charcoal'
+                            : 'bg-white text-slate-600 border-slate-300 hover:border-charcoal/40'
+                        }`}>
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -278,8 +322,8 @@ export default function EditFormClient({ form }: { form: any }) {
 
         {/* Actions */}
         <div className="flex items-center gap-3 pt-2">
-          <button type="submit" disabled={saving}
-            className="flex items-center gap-2 bg-charcoal text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-60">
+          <button type="submit" disabled={saving || !isDirty}
+            className="flex items-center gap-2 bg-charcoal text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
             <Save size={15} />
             {saving ? 'Saving…' : 'Save changes'}
           </button>
