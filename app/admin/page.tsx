@@ -20,25 +20,27 @@ export default async function AdminPage() {
 
   if (profile?.username?.toLowerCase() !== ADMIN_USERNAME) notFound()
 
-  // Fetch all users
-  const { data: users } = await supabase
-    .from('profiles')
-    .select('id, name, username, institution, specialty, points, is_blocked')
-    .order('points', { ascending: false })
-
-  // Fetch recent reports
-  const { data: reports } = await supabase
-    .from('reports')
-    .select('id, form_id, reason, note, created_at')
-    .order('created_at', { ascending: false })
-    .limit(50)
-
-  // Fetch all forms with is_active status
-  const { data: forms } = await supabase
-    .from('forms')
-    .select('id, title, user_id, is_active, fill_count, created_at')
-    .order('created_at', { ascending: false })
-    .limit(100)
+  // Parallel fetches
+  const [
+    { data: users },
+    { data: reports },
+    { data: forms },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, name, username, institution, specialty, points, is_blocked')
+      .order('points', { ascending: false }),
+    supabase
+      .from('reports')
+      .select('id, form_id, reason, note, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('forms')
+      .select('id, title, user_id, is_active, fill_count, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100),
+  ])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-10">
