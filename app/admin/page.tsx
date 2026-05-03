@@ -4,15 +4,21 @@ import AdminControls from './AdminControls'
 
 export const revalidate = 0
 
-// Only this email can access the admin panel
-const ADMIN_EMAIL = 'shekah.adel.b@gmail.com'
+const ADMIN_USERNAME = 'sheikah'
 
 export default async function AdminPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/auth')
-  if (user.email !== ADMIN_EMAIL) notFound()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.username?.toLowerCase() !== ADMIN_USERNAME) notFound()
 
   // Fetch all users
   const { data: users } = await supabase
