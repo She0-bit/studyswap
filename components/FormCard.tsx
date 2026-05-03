@@ -27,65 +27,83 @@ export default function FormCard({ form, rank, highlighted }: Props) {
     (criteria?.countries?.length ?? 0) > 0 ||
     criteria?.other
   )
+  const pts = 10 + form.estimated_minutes * 2
 
   return (
-    <Link href={`/forms/${form.id}`} className="block group">
-      <div className={`bg-white border rounded-xl px-5 py-4 hover:border-charcoal/30 hover:shadow-md transition-all ${
-        highlighted ? 'border-charcoal/20 ring-1 ring-charcoal/10' : 'border-ivory-border'
-      }`}>
-        {/* Top row: rank + tags */}
-        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+    <Link href={`/forms/${form.id}`} className="block group card-press">
+      <div className={`bg-white rounded-2xl px-4 py-4 sm:px-5 sm:py-4 border transition-all duration-200
+        hover:shadow-md hover:border-charcoal/25
+        ${highlighted
+          ? 'border-charcoal/20 ring-1 ring-charcoal/10 bg-white'
+          : 'border-ivory-border'
+        }`
+      }>
+        {/* Tags row */}
+        <div className="flex items-center gap-2 mb-2 min-w-0">
+          {/* Rank */}
           {rankGradient ? (
-            <span className={`bg-gradient-to-r ${rankGradient} text-white text-xs font-bold px-2 py-0.5 rounded-full`}>
+            <span className={`shrink-0 bg-gradient-to-r ${rankGradient} text-white text-xs font-bold px-2.5 py-0.5 rounded-full`}>
               #{rank}
             </span>
           ) : (
-            <span className="text-slate-400 text-xs font-medium">#{rank}</span>
+            <span className="shrink-0 text-xs font-medium text-slate-400 tabular-nums w-7">#{rank}</span>
           )}
+
+          {/* Specialty */}
           {form.specialty && (
-            <span className="text-xs text-charcoal bg-ivory px-2 py-0.5 rounded-full">
+            <span className="text-xs text-charcoal/80 bg-ivory border border-ivory-border px-2.5 py-0.5 rounded-full truncate max-w-[160px]">
               {form.specialty}
             </span>
           )}
+
           {highlighted && (
-            <span className="text-xs text-charcoal bg-ivory px-2 py-0.5 rounded-full">
+            <span className="shrink-0 text-xs font-medium text-charcoal bg-charcoal/8 px-2.5 py-0.5 rounded-full">
               ✦ For you
             </span>
           )}
+
+          {/* Criteria badge — pushed to far right */}
           {hasCriteria && (
-            <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Users size={10} /> Has criteria
+            <span className="ml-auto shrink-0 text-xs text-slate-400 flex items-center gap-1">
+              <Users size={10} />
+              <span className="hidden sm:inline">Criteria</span>
             </span>
           )}
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-slate-800 group-hover:text-charcoal transition-colors leading-snug">
+        <h3 className="font-semibold text-slate-800 group-hover:text-charcoal transition-colors leading-snug text-[15px] sm:text-base line-clamp-2">
           {form.title}
         </h3>
 
-        {/* Footer row */}
-        <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
-          <span className="flex items-center gap-1">
-            <Clock size={12} /> {form.estimated_minutes} min
-          </span>
-          <span className="flex items-center gap-1 text-emerald-600 font-medium">
-            <Trophy size={12} className="text-emerald-500" />
-            +{10 + form.estimated_minutes * 2} pts
-          </span>
+        {/* Footer */}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          {/* Left: time + points */}
+          <div className="flex items-center gap-3 text-xs text-slate-400 min-w-0">
+            <span className="flex items-center gap-1 shrink-0">
+              <Clock size={11} />
+              {form.estimated_minutes} min
+            </span>
+            <span className="flex items-center gap-1 shrink-0 font-semibold text-emerald-600">
+              <Trophy size={11} className="text-emerald-500" />
+              +{pts} pts
+            </span>
+          </div>
+
+          {/* Right: author */}
           {form.submitter_username ? (
             <Link
               href={`/u/${form.submitter_username}`}
               onClick={e => e.stopPropagation()}
-              className="flex items-center gap-1 hover:text-charcoal transition-colors ml-auto"
+              className="flex items-center gap-1 text-xs text-slate-400 hover:text-charcoal transition-colors shrink-0 min-h-[32px]"
             >
-              <BookOpen size={12} />
-              @{form.submitter_username}
+              <BookOpen size={11} />
+              <span className="max-w-[100px] truncate">@{form.submitter_username}</span>
             </Link>
           ) : (
-            <span className="flex items-center gap-1 ml-auto">
-              <BookOpen size={12} />
-              {form.submitter_name || 'Anonymous'}
+            <span className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
+              <BookOpen size={11} />
+              <span className="max-w-[100px] truncate">{form.submitter_name || 'Anonymous'}</span>
             </span>
           )}
         </div>

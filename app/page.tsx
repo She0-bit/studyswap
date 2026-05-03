@@ -81,23 +81,23 @@ export default async function HomePage({
   const activeTab = tab === 'following' && user ? 'following' : 'all'
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
       {/* Hero */}
       {!q && !specialty && (
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-slate-800 mb-3">
+        <div className="text-center mb-8 sm:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 mb-3 leading-tight">
             Be someone's n=1
           </h1>
-          <p className="text-slate-500 max-w-xl mx-auto text-base">
+          <p className="text-slate-500 max-w-xl mx-auto text-sm sm:text-base">
             Fill surveys. Rank higher. Get responses.
           </p>
           {!user && (
-            <div className="mt-5 flex items-center justify-center gap-3">
-              <Link href="/auth" className="bg-charcoal text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-charcoal-deep transition-colors">
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link href="/auth" className="w-full sm:w-auto flex items-center justify-center bg-charcoal text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-charcoal-deep transition-colors min-h-[44px]">
                 Get started free
               </Link>
-              <Link href="#feed" className="text-sm text-slate-500 hover:text-slate-700">Browse surveys ↓</Link>
+              <Link href="#feed" className="text-sm text-slate-500 hover:text-slate-700 min-h-[44px] flex items-center">Browse surveys ↓</Link>
             </div>
           )}
         </div>
@@ -135,13 +135,13 @@ export default async function HomePage({
 
       {/* Tabs */}
       {user && (
-        <div className="flex gap-1 mb-5 bg-ivory-dark p-1 rounded-xl w-fit">
-          <Link href="/" className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+        <div className="flex gap-1 mb-5 bg-ivory-dark p-1 rounded-xl w-full sm:w-fit">
+          <Link href="/" className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px] ${
             activeTab === 'all' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}>
             <Users size={14} /> All surveys
           </Link>
-          <Link href="/?tab=following" className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          <Link href="/?tab=following" className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[40px] ${
             activeTab === 'following' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
           }`}>
             <Rss size={14} /> Following
