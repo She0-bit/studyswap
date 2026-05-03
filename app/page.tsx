@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase-server'
 import FormCard from '@/components/FormCard'
 import FeedFilters from '@/components/FeedFilters'
 import Link from 'next/link'
-import { Users, Sparkles, Rss } from 'lucide-react'
+import { Users, Sparkles, Rss, FileText, Trophy, ArrowRight } from 'lucide-react'
 import { matchesCriteria, SPECIALTY_GROUPS, type FormFeedItem, type Profile } from '@/lib/types'
 
 export const revalidate = 0
@@ -104,20 +104,36 @@ export default async function HomePage({
             {!user ? (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link href="/auth"
-                  className="w-full sm:w-auto flex items-center justify-center bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
-                  Get started free
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
+                  Get started free <ArrowRight size={14} />
                 </Link>
                 <Link href="#feed"
-                  className="text-sm text-white/60 hover:text-white/90 transition-colors min-h-[44px] flex items-center">
+                  className="text-sm text-white/50 hover:text-white/80 transition-colors min-h-[44px] flex items-center">
                   Browse surveys ↓
                 </Link>
               </div>
             ) : (
               <Link href="/submit"
-                className="inline-flex items-center justify-center bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
+                className="inline-flex items-center justify-center gap-2 bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
                 + Submit your survey
               </Link>
             )}
+
+          {/* How it works — shown to everyone, concise */}
+          <div className="mt-8 grid grid-cols-3 gap-3 text-left">
+            {[
+              { icon: FileText, step: '01', title: 'Fill surveys',   desc: 'Complete studies from other researchers' },
+              { icon: Trophy,   step: '02', title: 'Earn points',    desc: 'Points scale with survey length' },
+              { icon: Sparkles, step: '03', title: 'Climb the rank', desc: 'Higher rank = more responses for you' },
+            ].map(({ icon: Icon, step, title, desc }) => (
+              <div key={step} className="bg-white/8 border border-white/10 rounded-2xl p-3 sm:p-4">
+                <p className="text-white/30 text-[10px] font-bold mb-2">{step}</p>
+                <Icon size={16} className="text-white/70 mb-1.5" />
+                <p className="text-white text-xs font-semibold leading-snug">{title}</p>
+                <p className="text-white/40 text-[11px] mt-0.5 leading-snug hidden sm:block">{desc}</p>
+              </div>
+            ))}
+          </div>
           </div>
         </div>
       )}
@@ -145,6 +161,21 @@ export default async function HomePage({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Feed header */}
+      {!q && !specialty && (
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-sm font-semibold text-slate-700">Live surveys</span>
+            {visibleFeed.length > 0 && (
+              <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                {visibleFeed.length}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
