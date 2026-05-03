@@ -34,13 +34,19 @@ export default function AdminControls({ users, forms }: { users: User[]; forms: 
   const supabase = createClient()
 
   async function toggleBlock(userId: string, currentlyBlocked: boolean) {
-    await supabase.from('profiles').update({ is_blocked: !currentlyBlocked }).eq('id', userId)
-    setLocalUsers(u => u.map(x => x.id === userId ? { ...x, is_blocked: !currentlyBlocked } : x))
+    const { error } = await supabase.rpc('admin_set_user_blocked', {
+      p_user_id:   userId,
+      p_is_blocked: !currentlyBlocked,
+    })
+    if (!error) setLocalUsers(u => u.map(x => x.id === userId ? { ...x, is_blocked: !currentlyBlocked } : x))
   }
 
   async function toggleForm(formId: string, currentlyActive: boolean) {
-    await supabase.from('forms').update({ is_active: !currentlyActive }).eq('id', formId)
-    setLocalForms(f => f.map(x => x.id === formId ? { ...x, is_active: !currentlyActive } : x))
+    const { error } = await supabase.rpc('admin_set_form_active', {
+      p_form_id:   formId,
+      p_is_active: !currentlyActive,
+    })
+    if (!error) setLocalForms(f => f.map(x => x.id === formId ? { ...x, is_active: !currentlyActive } : x))
   }
 
   const filteredUsers = localUsers.filter(u =>
