@@ -81,25 +81,44 @@ export default async function HomePage({
   const activeTab = tab === 'following' && user ? 'following' : 'all'
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
 
       {/* Hero */}
       {!q && !specialty && (
-        <div className="text-center mb-8 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-800 mb-3 leading-tight">
-            Be someone's n=1
-          </h1>
-          <p className="text-slate-500 max-w-xl mx-auto text-sm sm:text-base">
-            Fill surveys. Rank higher. Get responses.
-          </p>
-          {!user && (
-            <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link href="/auth" className="w-full sm:w-auto flex items-center justify-center bg-charcoal text-white px-6 py-3 rounded-xl text-sm font-medium hover:bg-charcoal-deep transition-colors min-h-[44px]">
-                Get started free
-              </Link>
-              <Link href="#feed" className="text-sm text-slate-500 hover:text-slate-700 min-h-[44px] flex items-center">Browse surveys ↓</Link>
+        <div className="relative rounded-3xl overflow-hidden mb-8 sm:mb-10 bg-gradient-to-br from-charcoal to-charcoal-deep px-6 py-10 sm:px-10 sm:py-14 text-center">
+          {/* Subtle grid overlay */}
+          <div className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+          <div className="relative z-10">
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-white/60 bg-white/10 border border-white/10 px-3 py-1.5 rounded-full mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Research participation exchange
             </div>
-          )}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 leading-tight tracking-tight">
+              Be someone's n=1
+            </h1>
+            <p className="text-white/60 max-w-sm mx-auto text-sm sm:text-base mb-6">
+              Fill surveys. Rank higher. Get responses for your research.
+            </p>
+            {!user ? (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link href="/auth"
+                  className="w-full sm:w-auto flex items-center justify-center bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
+                  Get started free
+                </Link>
+                <Link href="#feed"
+                  className="text-sm text-white/60 hover:text-white/90 transition-colors min-h-[44px] flex items-center">
+                  Browse surveys ↓
+                </Link>
+              </div>
+            ) : (
+              <Link href="/submit"
+                className="inline-flex items-center justify-center bg-white text-charcoal px-6 py-3 rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors min-h-[44px] shadow-sm">
+                + Submit your survey
+              </Link>
+            )}
+          </div>
         </div>
       )}
 
@@ -107,21 +126,20 @@ export default async function HomePage({
       {user && !q && !specialty && activeTab === 'all' && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={16} className="text-charcoal" />
-            <h2 className="font-semibold text-slate-800">Suggested for you</h2>
-            <span className="text-xs text-slate-400 ml-1">surveys matching your profile</span>
+            <Sparkles size={15} className="text-charcoal" />
+            <h2 className="font-semibold text-slate-700 text-sm">Suggested for you</h2>
           </div>
           {!hasProfileForMatching ? (
-            <div className="bg-ivory border border-charcoal/10 rounded-xl px-5 py-4 text-sm text-charcoal flex items-center justify-between">
-              <span>Complete your profile to see surveys tailored to you</span>
-              <Link href="/profile" className="font-medium underline underline-offset-2 shrink-0 ml-4">Update profile →</Link>
+            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl px-5 py-4 text-sm text-slate-600 flex items-center justify-between">
+              <span>Complete your profile to see tailored surveys</span>
+              <Link href="/profile" className="font-semibold text-charcoal hover:underline shrink-0 ml-4">Update →</Link>
             </div>
           ) : forYou.length === 0 ? (
-            <div className="bg-ivory border border-ivory-border rounded-xl px-5 py-4 text-sm text-slate-500">
+            <div className="bg-white border border-slate-100 shadow-sm rounded-2xl px-5 py-4 text-sm text-slate-400">
               No matching surveys right now — check back later.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               {forYou.map(form => (
                 <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} highlighted />
               ))}
@@ -170,16 +188,16 @@ export default async function HomePage({
         )
       ) : visibleFeed.length === 0 ? (
         <div className="text-center py-20 text-slate-400">
-          <p className="text-lg mb-2">No surveys found</p>
+          <p className="text-lg font-semibold mb-2 text-slate-600">No surveys found</p>
           <p className="text-sm">
             {user
-              ? <Link href="/submit" className="text-charcoal hover:underline">Submit the first one →</Link>
-              : <Link href="/auth" className="text-charcoal hover:underline">Sign in to submit yours →</Link>
+              ? <Link href="/submit" className="text-charcoal font-medium hover:underline">Submit the first one →</Link>
+              : <Link href="/auth" className="text-charcoal font-medium hover:underline">Sign in to submit yours →</Link>
             }
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {visibleFeed.map((form, i) => (
             <FormCard key={form.id} form={form} rank={i + 1} />
           ))}

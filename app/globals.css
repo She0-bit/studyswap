@@ -1,25 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #F3F0E7;
-  --foreground: #2A2529;
+  --background: #FAFAFA;
+  --foreground: #18181B;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans:  var(--font-geist-sans);
+  --font-mono:  var(--font-geist-mono);
+  --font-display: var(--font-jakarta);
 
-  /* n=1 brand palette */
-  --color-charcoal:      #2A2529;
-  --color-charcoal-deep: #1a1518;
-  --color-ivory:         #F3F0E7;
-  --color-ivory-dark:    #E8E3D8;
-  --color-ivory-border:  #D9D3C7;
+  /* ── Brand ─────────────────────────────────────────────────── */
+  --color-charcoal:       #2A2529;
+  --color-charcoal-deep:  #1a1518;
+
+  /* ── Surfaces ──────────────────────────────────────────────── */
+  --color-surface:        #FAFAFA;   /* page background — clean, modern */
+  --color-card:           #FFFFFF;   /* card surface */
+
+  /* ── Legacy ivory tokens (kept for compat) ─────────────────── */
+  --color-ivory:          #F4F4F5;
+  --color-ivory-dark:     #E4E4E7;
+  --color-ivory-border:   #E2E8F0;
 }
 
-/* ── Base ─────────────────────────────────────────────────── */
+/* ── Base ─────────────────────────────────────────────────────── */
 html {
   overflow-x: hidden;
   scroll-behavior: smooth;
@@ -28,28 +35,31 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
-  /* Safe-area insets for notched phones */
   padding-left:  env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
-/* ── Touch optimisations ──────────────────────────────────── */
-/* Removes 300ms tap delay on all interactive elements */
+/* ── Display font for headings ─────────────────────────────────── */
+h1, h2, h3, h4 {
+  font-family: var(--font-jakarta), var(--font-geist-sans), sans-serif;
+}
+
+/* ── Touch optimisations ───────────────────────────────────────── */
 a, button, [role="button"], input, select, textarea, label {
   touch-action: manipulation;
 }
 
-/* Press feedback on cards / links (feels native on mobile) */
+/* ── Card press feedback ───────────────────────────────────────── */
 .card-press {
-  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
 }
 .card-press:active {
   transform: scale(0.985);
 }
 
-/* ── Typography ───────────────────────────────────────────── */
+/* ── Utility ───────────────────────────────────────────────────── */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -57,17 +67,17 @@ a, button, [role="button"], input, select, textarea, label {
   overflow: hidden;
 }
 
-/* ── Scrollbar ────────────────────────────────────────────── */
+/* ── Scrollbar ─────────────────────────────────────────────────── */
 @media (min-width: 768px) {
-  ::-webkit-scrollbar       { width: 6px; }
+  ::-webkit-scrollbar       { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #D9D3C7; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: #D4D4D8; border-radius: 3px; }
 }
 
-/* ── Reduced motion ───────────────────────────────────────── */
+/* ── Reduced motion ────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration:   0.01ms !important;
-    transition-duration:  0.01ms !important;
+    animation-duration:  0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

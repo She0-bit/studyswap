@@ -10,16 +10,9 @@ type Props = {
   highlighted?: boolean
 }
 
-const RANK_COLORS = [
-  'from-yellow-400 to-amber-500',
-  'from-slate-300 to-slate-400',
-  'from-amber-600 to-amber-700',
-]
-
 export default function FormCard({ form, rank, highlighted }: Props) {
-  const rankGradient = rank <= 3 ? RANK_COLORS[rank - 1] : null
-  const criteria     = form.sample_criteria
-  const hasCriteria  = !!(
+  const criteria    = form.sample_criteria
+  const hasCriteria = !!(
     (criteria?.roles?.length ?? 0) > 0 ||
     (criteria?.sex && criteria.sex !== 'any') ||
     criteria?.min_age != null ||
@@ -29,42 +22,51 @@ export default function FormCard({ form, rank, highlighted }: Props) {
   )
   const pts = 10 + form.estimated_minutes * 2
 
+  // Rank accent — top 3 get a coloured left border
+  const rankAccent =
+    rank === 1 ? 'border-l-4 border-l-amber-400' :
+    rank === 2 ? 'border-l-4 border-l-slate-400' :
+    rank === 3 ? 'border-l-4 border-l-amber-600' :
+    ''
+
   return (
     <Link href={`/forms/${form.id}`} className="block group card-press">
-      <div className={`bg-white rounded-2xl px-4 py-4 sm:px-5 sm:py-4 border transition-all duration-200
-        hover:shadow-md hover:border-charcoal/25
-        ${highlighted
-          ? 'border-charcoal/20 ring-1 ring-charcoal/10 bg-white'
-          : 'border-ivory-border'
-        }`
-      }>
-        {/* Tags row */}
-        <div className="flex items-center gap-2 mb-2 min-w-0">
-          {/* Rank */}
-          {rankGradient ? (
-            <span className={`shrink-0 bg-gradient-to-r ${rankGradient} text-white text-xs font-bold px-2.5 py-0.5 rounded-full`}>
+      <div className={`
+        bg-white rounded-2xl px-5 py-4 border border-slate-100
+        shadow-sm hover:shadow-md hover:-translate-y-0.5
+        transition-all duration-200
+        ${rankAccent}
+        ${highlighted ? 'ring-2 ring-charcoal/10 border-charcoal/15' : ''}
+      `}>
+
+        {/* Top row: rank + specialty + criteria */}
+        <div className="flex items-center gap-2 mb-2.5 min-w-0">
+          {rank <= 3 ? (
+            <span className={`shrink-0 text-xs font-bold tabular-nums px-2 py-0.5 rounded-full ${
+              rank === 1 ? 'text-amber-700 bg-amber-50' :
+              rank === 2 ? 'text-slate-600 bg-slate-100' :
+                           'text-amber-800 bg-amber-50/80'
+            }`}>
               #{rank}
             </span>
           ) : (
-            <span className="shrink-0 text-xs font-medium text-slate-400 tabular-nums w-7">#{rank}</span>
+            <span className="shrink-0 text-xs text-slate-400 tabular-nums font-medium">#{rank}</span>
           )}
 
-          {/* Specialty */}
           {form.specialty && (
-            <span className="text-xs text-charcoal/80 bg-ivory border border-ivory-border px-2.5 py-0.5 rounded-full truncate max-w-[160px]">
+            <span className="truncate max-w-[150px] text-xs font-medium text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-0.5 rounded-full">
               {form.specialty}
             </span>
           )}
 
           {highlighted && (
-            <span className="shrink-0 text-xs font-medium text-charcoal bg-charcoal/8 px-2.5 py-0.5 rounded-full">
+            <span className="shrink-0 text-xs font-semibold text-charcoal bg-charcoal/6 px-2.5 py-0.5 rounded-full">
               ✦ For you
             </span>
           )}
 
-          {/* Criteria badge — pushed to far right */}
           {hasCriteria && (
-            <span className="ml-auto shrink-0 text-xs text-slate-400 flex items-center gap-1">
+            <span className="ml-auto shrink-0 flex items-center gap-1 text-xs text-slate-400">
               <Users size={10} />
               <span className="hidden sm:inline">Criteria</span>
             </span>
@@ -72,38 +74,37 @@ export default function FormCard({ form, rank, highlighted }: Props) {
         </div>
 
         {/* Title */}
-        <h3 className="font-semibold text-slate-800 group-hover:text-charcoal transition-colors leading-snug text-[15px] sm:text-base line-clamp-2">
+        <h3 className="font-semibold text-slate-900 group-hover:text-charcoal transition-colors text-[15px] sm:text-base leading-snug line-clamp-2 mb-3">
           {form.title}
         </h3>
 
         {/* Footer */}
-        <div className="mt-3 flex items-center justify-between gap-2">
-          {/* Left: time + points */}
-          <div className="flex items-center gap-3 text-xs text-slate-400 min-w-0">
-            <span className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5">
               <Clock size={11} />
               {form.estimated_minutes} min
             </span>
-            <span className="flex items-center gap-1 shrink-0 font-semibold text-emerald-600">
-              <Trophy size={11} className="text-emerald-500" />
+            <span className="w-px h-3 bg-slate-200" />
+            <span className="flex items-center gap-1.5 font-semibold text-emerald-600">
+              <Trophy size={11} />
               +{pts} pts
             </span>
           </div>
 
-          {/* Right: author */}
           {form.submitter_username ? (
             <Link
               href={`/u/${form.submitter_username}`}
               onClick={e => e.stopPropagation()}
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-charcoal transition-colors shrink-0 min-h-[32px]"
+              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-charcoal transition-colors shrink-0 min-h-[32px]"
             >
               <BookOpen size={11} />
-              <span className="max-w-[100px] truncate">@{form.submitter_username}</span>
+              <span className="max-w-[110px] truncate">@{form.submitter_username}</span>
             </Link>
           ) : (
-            <span className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
+            <span className="flex items-center gap-1.5 text-xs text-slate-400 shrink-0">
               <BookOpen size={11} />
-              <span className="max-w-[100px] truncate">{form.submitter_name || 'Anonymous'}</span>
+              {form.submitter_name || 'Anonymous'}
             </span>
           )}
         </div>
