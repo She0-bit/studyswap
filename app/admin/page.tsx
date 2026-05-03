@@ -5,7 +5,7 @@ import AdminControls from './AdminControls'
 export const revalidate = 0
 
 // Only this email can access the admin panel
-const ADMIN_EMAIL = 'yayanew@proton.me'
+const ADMIN_EMAIL = 'shekah.adel.b@gmail.com'
 
 export default async function AdminPage() {
   const supabase = await createClient()
