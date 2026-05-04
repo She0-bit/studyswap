@@ -2,18 +2,28 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { Plus, User, LogOut, Menu, X, Trophy } from 'lucide-react'
+import { Plus, LogOut, Menu, X, Trophy, Users, Settings } from 'lucide-react'
+import { getAvatarGradient } from '@/components/Avatar'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 
 export default function Navbar() {
   const [user, setUser]         = useState<SupabaseUser | null>(null)
   const [points, setPoints]     = useState(0)
   const [username, setUsername] = useState<string | null>(null)
+  const [name, setName]         = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const supabase = createClient()
+
+  // Scroll-aware frosted glass
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
@@ -24,134 +34,231 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    if (!user) { setPoints(0); setUsername(null); return }
-    supabase.from('profiles').select('points, username').eq('id', user.id).single()
+    if (!user) { setPoints(0); setUsername(null); setName(null); return }
+    supabase.from('profiles').select('points, username, name').eq('id', user.id).single()
       .then(({ data }) => {
-        if (data) { setPoints(data.points); setUsername(data.username) }
+        if (data) { setPoints(data.points); setUsername(data.username); setName(data.name) }
       })
   }, [user, pathname])
 
-  // Close menu on route change
   useEffect(() => { setMenuOpen(false) }, [pathname])
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [menuOpen])
 
   async function signOut() {
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
-  const profileHref = username ? `/u/${username}` : '/profile'
+  const profileHref   = username ? `/u/${username}` : '/profile'
+  const avatarSeed    = name || username || 'U'
+  const avatarInitial = avatarSeed[0]?.toUpperCase() ?? 'U'
+  const gradient      = getAvatarGradient(avatarSeed)
+
+  const isActive = (href: string) => pathname === href
 
   return (
-    <nav className="bg-charcoal sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16 sm:h-[88px]">
+    <>
+      <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-charcoal/95 backdrop-blur-md border-b border-white/[0.08] shadow-lg shadow-black/10'
+          : 'bg-charcoal border-b border-white/[0.06]'
+      }`}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
 
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.svg" alt="n=1" className="h-10 sm:h-14 w-auto" />
-          <span className="text-ivory text-2xl sm:text-3xl" style={{ fontFamily: 'var(--font-fredoka)' }}>n=1</span>
-        </Link>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.svg" alt="n=1" className="h-8 w-auto transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-white text-[22px] leading-none tracking-tight" style={{ fontFamily: 'var(--font-fredoka)' }}>n=1</span>
+          </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden sm:flex items-center gap-4">
-          <Link href="/leaderboard"
-            className="flex items-center gap-1.5 text-sm text-ivory/70 hover:text-white px-2 py-1.5 transition-colors">
-            <Trophy size={15} /> Leaderboard
-          </Link>
-          <Link href="/users"
-            className="flex items-center gap-1.5 text-sm text-ivory/70 hover:text-white px-2 py-1.5 transition-colors">
-            <User size={15} /> Find researchers
-          </Link>
-          {user ? (
-            <>
-              <span className="text-sm font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
+          {/* Desktop nav */}
+          <div className="hidden sm:flex items-center gap-0.5">
+
+            <Link href="/leaderboard" className={`relative flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg transition-all duration-200 ${
+              isActive('/leaderboard')
+                ? 'text-white bg-white/10'
+                : 'text-white/55 hover:text-white hover:bg-white/8'
+            }`}>
+              <Trophy size={14} />
+              Leaderboard
+              {isActive('/leaderboard') && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400" />
+              )}
+            </Link>
+
+            <Link href="/users" className={`relative flex items-center gap-1.5 text-sm px-3 py-2 rounded-lg transition-all duration-200 ${
+              isActive('/users')
+                ? 'text-white bg-white/10'
+                : 'text-white/55 hover:text-white hover:bg-white/8'
+            }`}>
+              <Users size={14} />
+              Researchers
+              {isActive('/users') && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400" />
+              )}
+            </Link>
+
+            {/* Divider */}
+            <span className="mx-2 h-4 w-px bg-white/10" />
+
+            {user ? (
+              <>
+                {/* Points pill */}
+                <span className="text-[11px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1 rounded-full tabular-nums">
+                  {points} pts
+                </span>
+
+                {/* Submit */}
+                <Link href="/submit"
+                  className="flex items-center gap-1.5 text-sm bg-white text-charcoal px-3.5 py-2 rounded-lg hover:bg-white/90 active:scale-95 transition-all duration-150 font-semibold ml-1.5 shadow-sm">
+                  <Plus size={14} /> Submit
+                </Link>
+
+                {/* Avatar + username */}
+                <Link href={profileHref}
+                  className="flex items-center gap-2 text-sm text-white/60 hover:text-white hover:bg-white/8 px-2.5 py-1.5 rounded-lg transition-all duration-200 ml-1 group">
+                  <div className={`w-7 h-7 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-[11px] font-bold text-white shrink-0 ring-2 ring-white/0 group-hover:ring-white/20 transition-all duration-200`}>
+                    {avatarInitial}
+                  </div>
+                  <span className="max-w-[80px] truncate text-sm">
+                    {username ? `@${username}` : 'Profile'}
+                  </span>
+                </Link>
+
+                {/* Settings */}
+                <Link href="/profile"
+                  className="text-white/35 hover:text-white/80 hover:bg-white/8 p-2 rounded-lg transition-all duration-200"
+                  title="Settings">
+                  <Settings size={14} />
+                </Link>
+
+                {/* Sign out */}
+                <button onClick={signOut}
+                  className="text-white/25 hover:text-red-400 hover:bg-red-400/8 p-2 rounded-lg transition-all duration-200 ml-0.5"
+                  title="Sign out">
+                  <LogOut size={14} />
+                </button>
+              </>
+            ) : (
+              <Link href="/auth"
+                className="text-sm bg-white text-charcoal px-4 py-2 rounded-lg hover:bg-white/90 active:scale-95 transition-all duration-150 font-semibold ml-1 shadow-sm">
+                Sign in
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile right */}
+          <div className="flex sm:hidden items-center gap-2.5">
+            {user && (
+              <span className="text-[11px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1 rounded-full tabular-nums">
                 {points} pts
               </span>
-              <Link href="/submit"
-                className="flex items-center gap-1.5 text-sm bg-ivory text-charcoal px-3 py-1.5 rounded-lg hover:bg-ivory-dark transition-colors font-medium">
-                <Plus size={15} /> Submit
-              </Link>
-              <Link href={profileHref}
-                className="flex items-center gap-1.5 text-sm text-ivory/80 hover:text-white px-2 py-1.5 transition-colors">
-                <User size={15} />
-                {username ? <span>@{username}</span> : <span>Profile</span>}
-              </Link>
-              <Link href="/profile"
-                className="text-xs text-ivory/50 hover:text-ivory/80 px-1 py-1.5 transition-colors">
-                Settings
-              </Link>
-              <button onClick={signOut}
-                className="flex items-center gap-1.5 text-sm text-ivory/50 hover:text-red-400 px-2 py-1.5 transition-colors">
-                <LogOut size={15} />
-              </button>
-            </>
-          ) : (
-            <Link href="/auth"
-              className="text-sm bg-ivory text-charcoal px-4 py-1.5 rounded-lg hover:bg-ivory-dark transition-colors font-medium">
-              Sign in
-            </Link>
-          )}
+            )}
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              className="flex items-center justify-center text-white/70 hover:text-white hover:bg-white/8 w-10 h-10 rounded-lg transition-all duration-200"
+            >
+              <span className={`transition-all duration-200 ${menuOpen ? 'rotate-90 opacity-0 absolute' : 'rotate-0 opacity-100'}`}>
+                <Menu size={20} />
+              </span>
+              <span className={`transition-all duration-200 ${menuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0 absolute'}`}>
+                <X size={20} />
+              </span>
+            </button>
+          </div>
         </div>
+      </nav>
 
-        {/* Mobile right side */}
-        <div className="flex sm:hidden items-center gap-2">
-          {user && (
-            <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
-              {points} pts
-            </span>
-          )}
-          {/* Burger — 44×44 touch target */}
-          <button
-            className="flex items-center justify-center text-ivory/80 hover:text-white min-h-[44px] min-w-[44px]"
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
+      {/* Mobile menu overlay */}
       {menuOpen && (
-        <div className="sm:hidden border-t border-white/10 bg-charcoal-deep px-5 py-3 flex flex-col">
-          {user ? (
-            <>
-              {username && (
-                <Link href={`/u/${username}`} className="flex items-center gap-2 text-sm text-ivory/90 font-medium min-h-[44px]">
-                  <User size={15} /> @{username}
-                </Link>
+        <div
+          className="fixed inset-0 z-40 sm:hidden"
+          onClick={() => setMenuOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in" />
+
+          {/* Drawer panel */}
+          <div
+            className="absolute top-16 left-0 right-0 bg-charcoal border-b border-white/[0.08] animate-slide-down shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="max-w-5xl mx-auto px-4 py-3 flex flex-col gap-0.5">
+              {user ? (
+                <>
+                  {/* User identity */}
+                  <Link href={profileHref} className="flex items-center gap-3 py-3 mb-1 border-b border-white/[0.06]" onClick={() => setMenuOpen(false)}>
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-base font-bold text-white shrink-0`}>
+                      {avatarInitial}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{name || (username ? `@${username}` : 'My profile')}</p>
+                      {username && <p className="text-xs text-white/40 mt-0.5">@{username}</p>}
+                    </div>
+                    <span className="ml-auto text-white/20 text-xs">View profile →</span>
+                  </Link>
+
+                  <MobileLink href="/submit" icon={<Plus size={15} className="text-white/50" />} label="Submit survey" onClick={() => setMenuOpen(false)} />
+                  <MobileLink href="/leaderboard" icon={<Trophy size={15} className="text-white/40" />} label="Leaderboard" active={isActive('/leaderboard')} onClick={() => setMenuOpen(false)} />
+                  <MobileLink href="/users" icon={<Users size={15} className="text-white/40" />} label="Find researchers" active={isActive('/users')} onClick={() => setMenuOpen(false)} />
+                  <MobileLink href="/profile" icon={<Settings size={15} className="text-white/40" />} label="Settings" onClick={() => setMenuOpen(false)} />
+
+                  <div className="border-t border-white/[0.06] mt-2 pt-2">
+                    <button onClick={signOut}
+                      className="flex items-center gap-3 text-sm text-red-400 min-h-[44px] w-full px-2 rounded-lg hover:bg-red-400/8 transition-colors">
+                      <LogOut size={15} /> Sign out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <MobileLink href="/auth" label="Sign in" bold onClick={() => setMenuOpen(false)} />
+                  <MobileLink href="/leaderboard" icon={<Trophy size={15} className="text-white/40" />} label="Leaderboard" active={isActive('/leaderboard')} onClick={() => setMenuOpen(false)} />
+                  <MobileLink href="/users" icon={<Users size={15} className="text-white/40" />} label="Find researchers" active={isActive('/users')} onClick={() => setMenuOpen(false)} />
+                </>
               )}
-              <Link href="/submit" className="flex items-center gap-2 text-sm text-ivory font-medium min-h-[44px]">
-                <Plus size={15} /> Submit survey
-              </Link>
-              <Link href="/leaderboard" className="flex items-center gap-2 text-sm text-ivory/70 min-h-[44px]">
-                <Trophy size={15} /> Leaderboard
-              </Link>
-              <Link href="/users" className="flex items-center gap-2 text-sm text-ivory/70 min-h-[44px]">
-                <User size={15} /> Find researchers
-              </Link>
-              <Link href="/profile" className="flex items-center gap-2 text-sm text-ivory/70 min-h-[44px]">
-                Settings
-              </Link>
-              <div className="border-t border-white/10 mt-1 pt-1">
-                <button onClick={signOut} className="flex items-center gap-2 text-sm text-red-400 min-h-[44px] w-full text-left">
-                  <LogOut size={15} /> Sign out
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <Link href="/auth" className="flex items-center text-sm text-ivory font-medium min-h-[44px]">Sign in</Link>
-              <Link href="/leaderboard" className="flex items-center gap-2 text-sm text-ivory/70 min-h-[44px]">
-                <Trophy size={15} /> Leaderboard
-              </Link>
-              <Link href="/users" className="flex items-center gap-2 text-sm text-ivory/70 min-h-[44px]">
-                <User size={15} /> Find researchers
-              </Link>
-            </>
-          )}
+            </div>
+            {/* Safe area spacer */}
+            <div className="h-[env(safe-area-inset-bottom,0px)]" />
+          </div>
         </div>
       )}
-    </nav>
+    </>
+  )
+}
+
+function MobileLink({
+  href, icon, label, active, bold, onClick,
+}: {
+  href: string
+  icon?: React.ReactNode
+  label: string
+  active?: boolean
+  bold?: boolean
+  onClick?: () => void
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`flex items-center gap-3 text-sm min-h-[44px] px-2 rounded-lg transition-colors ${
+        active
+          ? 'text-white bg-white/8'
+          : bold
+          ? 'text-white font-semibold hover:bg-white/8'
+          : 'text-white/65 hover:text-white hover:bg-white/8'
+      }`}
+    >
+      {icon}
+      {label}
+      {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+    </Link>
   )
 }

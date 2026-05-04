@@ -9,9 +9,10 @@ type Props = {
   form: FormFeedItem
   rank: number
   highlighted?: boolean
+  index?: number
 }
 
-export default function FormCard({ form, rank, highlighted }: Props) {
+export default function FormCard({ form, rank, highlighted, index = 0 }: Props) {
   const criteria    = form.sample_criteria
   const hasCriteria = !!(
     (criteria?.roles?.length ?? 0) > 0 ||
@@ -30,8 +31,14 @@ export default function FormCard({ form, rank, highlighted }: Props) {
     rank === 2 ? 'border-l-4 border-l-slate-400' :
     rank === 3 ? 'border-l-4 border-l-amber-600' : ''
 
+  const delay = Math.min(index * 40, 300)
+
   return (
-    <Link href={`/forms/${form.id}`} className="block group card-press">
+    <Link
+      href={`/forms/${form.id}`}
+      className="block group card-press animate-fade-slide-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <div className={`
         bg-white rounded-2xl px-4 py-4 sm:px-5 border border-slate-100
         shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200

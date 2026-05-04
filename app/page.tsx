@@ -85,7 +85,7 @@ export default async function HomePage({
 
       {/* Hero */}
       {!q && !specialty && (
-        <div className="relative rounded-3xl overflow-hidden mb-8 sm:mb-10 bg-gradient-to-br from-charcoal to-charcoal-deep px-6 py-10 sm:px-10 sm:py-14 text-center">
+        <div className="relative rounded-3xl overflow-hidden mb-8 sm:mb-10 bg-gradient-to-br from-charcoal to-charcoal-deep px-6 py-10 sm:px-10 sm:py-14 text-center animate-fade-slide-up">
           {/* Subtle grid overlay */}
           <div className="absolute inset-0 opacity-[0.04]"
             style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
@@ -156,8 +156,8 @@ export default async function HomePage({
             </div>
           ) : (
             <div className="space-y-2.5">
-              {forYou.map(form => (
-                <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} highlighted />
+              {forYou.map((form, i) => (
+                <FormCard key={form.id} form={form} rank={sortedFeed.indexOf(form) + 1} highlighted index={i} />
               ))}
             </div>
           )}
@@ -213,7 +213,7 @@ export default async function HomePage({
         ) : (
           <div className="space-y-3">
             {visibleFollowingFeed.map((form, i) => (
-              <FormCard key={form.id} form={form} rank={i + 1} />
+              <FormCard key={form.id} form={form} rank={i + 1} index={i} />
             ))}
           </div>
         )
@@ -230,7 +230,7 @@ export default async function HomePage({
       ) : (
         <div className="space-y-2.5">
           {visibleFeed.map((form, i) => (
-            <FormCard key={form.id} form={form} rank={i + 1} />
+            <FormCard key={form.id} form={form} rank={i + 1} index={i} />
           ))}
         </div>
       )}

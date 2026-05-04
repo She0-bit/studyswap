@@ -153,7 +153,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         ) : (
           <div className="space-y-2.5">
             {feed.map((form, i) => (
-              <FormCard key={form.id} form={form} rank={i + 1} />
+              <FormCard key={form.id} form={form} rank={i + 1} index={i} />
             ))}
           </div>
         )}
