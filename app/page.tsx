@@ -37,17 +37,17 @@ export default async function HomePage({
 
   // ── Landing page for non-logged-in users ─────────────────────
   if (!user) {
-    const [{ count: userCount }, { count: fillCount }] = await Promise.all([
-      supabase.from('profiles').select('*', { count: 'exact', head: true }).not('username', 'is', null),
-      supabase.from('fills').select('*', { count: 'exact', head: true }),
-    ])
+    const { count: userCount } = await supabase
+      .from('profiles').select('*', { count: 'exact', head: true }).not('username', 'is', null)
+    // Sum fill_count from the feed — avoids RLS blocking a direct fills table count
+    const totalFills = sortedFeed.reduce((a, f) => a + (f.fill_count ?? 0), 0)
     return (
       <LandingView
         previewForms={sortedFeed.slice(0, 6)}
         stats={{
           users:   userCount   ?? 0,
           surveys: sortedFeed.length,
-          fills:   fillCount   ?? 0,
+          fills:   totalFills,
         }}
       />
     )

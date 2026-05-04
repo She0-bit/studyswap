@@ -108,7 +108,7 @@ function AuthForm() {
           {/* Logo */}
           <div className="flex items-center gap-2.5 mb-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-light.png" alt="n=1" className="h-8 w-auto" />
+            <img src="/logo-light.png" alt="n=1" className="h-8 w-auto" style={{ filter: 'brightness(0) invert(1)' }} />
             <span className="text-white text-2xl leading-none" style={{ fontFamily: 'var(--font-chunky)' }}>n=1</span>
           </div>
 

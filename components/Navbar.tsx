@@ -73,7 +73,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-light.png" alt="n=1" className="h-8 w-auto transition-transform duration-200 group-hover:scale-105" />
+            <img src="/logo-light.png" alt="n=1" className="h-8 w-auto transition-transform duration-200 group-hover:scale-105" style={{ filter: 'brightness(0) invert(1)' }} />
             <span className="text-white text-[22px] leading-none tracking-tight" style={{ fontFamily: 'var(--font-chunky)' }}>n=1</span>
           </Link>
 
