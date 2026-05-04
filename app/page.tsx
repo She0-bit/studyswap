@@ -29,11 +29,7 @@ export default async function HomePage({
   const { data: forms } = await query
   const feed = (forms ?? []) as FormFeedItem[]
 
-  const FEATURED_USERNAME = 'sheikah'
-  const sortedFeed = [
-    ...feed.filter(f => f.submitter_username?.toLowerCase() === FEATURED_USERNAME),
-    ...feed.filter(f => f.submitter_username?.toLowerCase() !== FEATURED_USERNAME),
-  ]
+  const sortedFeed = feed
 
   // ── Landing page for non-logged-in users ─────────────────────
   if (!user) {
