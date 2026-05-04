@@ -108,7 +108,7 @@ function AuthForm() {
           {/* Logo */}
           <div className="flex items-center gap-2.5 mb-12">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="n=1" className="h-8 w-auto" />
+            <img src="/logo-light.png" alt="n=1" className="h-8 w-auto" />
             <span className="text-white text-2xl leading-none" style={{ fontFamily: 'var(--font-fredoka)' }}>n=1</span>
           </div>
 
@@ -147,7 +147,7 @@ function AuthForm() {
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 mb-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.svg" alt="n=1" className="h-7 w-auto" />
+            <img src="/logo-dark.png" alt="n=1" className="h-7 w-auto" />
             <span className="text-charcoal text-xl" style={{ fontFamily: 'var(--font-fredoka)' }}>n=1</span>
           </div>
 
