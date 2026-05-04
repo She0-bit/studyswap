@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Fredoka, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
@@ -8,10 +9,10 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
-  subsets: ["latin"],
-  weight: "600",
+const chunkypuffly = localFont({
+  src: "../public/fonts/ChunkypufflyRegular-drB0l.otf",
+  variable: "--font-chunky",
+  display: "swap",
 });
 
 const jakarta = Plus_Jakarta_Sans({
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${fredoka.variable} ${jakarta.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${chunkypuffly.variable} ${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-surface">
         <Navbar />
         <main className="flex-1">{children}</main>
