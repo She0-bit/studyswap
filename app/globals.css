@@ -86,6 +86,28 @@ a, button, [role="button"], input, select, textarea, label {
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50%       { transform: translateY(-14px) rotate(-2deg); }
+}
+@keyframes float2 {
+  0%, 100% { transform: translateY(0px) rotate(1.5deg); }
+  50%       { transform: translateY(-10px) rotate(1.5deg); }
+}
+@keyframes float3 {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50%       { transform: translateY(-18px) rotate(-1deg); }
+}
+@keyframes gradientPan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-float  { animation: float  5s ease-in-out infinite; }
+.animate-float2 { animation: float2 6.5s ease-in-out infinite; }
+.animate-float3 { animation: float3 4.5s ease-in-out infinite; }
+
 /* ── Animation utility classes ─────────────────────────────────── */
 .animate-fade-in {
   animation: fadeIn 200ms ease-out both;
